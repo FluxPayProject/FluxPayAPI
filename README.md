@@ -48,7 +48,7 @@ FluxPayAPI offers realtime communication using SignalR.
 ## Infrastructure diagram
 
 Setup: [Azure infrastructure](terraform/infrastructure/README.md),
-[Azure DevOps](terraform/azure-devops/variable-groups/README.md),
+[Azure DevOps](terraform/azure-devops/README.md),
 [Cloudflare DNS](terraform/cloudflare/README.md).
 
 ![./img/infrastructure_diagram.png](./img/infrastructure_diagram.png)
@@ -159,7 +159,7 @@ for deployment or rollback. Version tags are immutable. The `latest` tag and
 registry cache tags are mutable. Release and PR builds import the default cache
 and export to `buildcache-v2-release` and `buildcache-v2-pr`, respectively.
 
-Pipeline credentials and permissions: [Azure DevOps setup](terraform/azure-devops/variable-groups/README.md).
+Pipeline credentials and permissions: [Azure DevOps setup](terraform/azure-devops/README.md).
 
 ## Screenshots
 

@@ -11,7 +11,7 @@ resources, backend storage access and the service credentials below.
 From the repository root:
 
 ```bash
-cd terraform/azure-devops/variable-groups
+cd terraform/azure-devops
 ```
 
 Create the ignored `backend.hcl` locally:

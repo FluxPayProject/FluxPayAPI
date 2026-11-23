@@ -23,10 +23,10 @@ terraform/cloudflare/environments/*/backend.hcl
 *.lock.info
 *.conf
 *.txt
-!terraform/azure-devops/variable-groups/.terraform.lock.hcl
-terraform/azure-devops/variable-groups/backend.hcl
-terraform/azure-devops/variable-groups/*.tfvars
-terraform/azure-devops/variable-groups/*.tfvars.json
+!terraform/azure-devops/.terraform.lock.hcl
+terraform/azure-devops/backend.hcl
+terraform/azure-devops/*.tfvars
+terraform/azure-devops/*.tfvars.json
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
