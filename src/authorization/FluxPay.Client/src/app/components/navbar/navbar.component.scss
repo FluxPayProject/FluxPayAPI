@@ -8,24 +8,9 @@
 
 .navBarContainer {
   position: fixed;
-  top: 160px;
-  bottom: 0;
+  margin-top: 80px;
   width: 328px;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-
-  > * {
-    flex-shrink: 0;
-  }
-}
-
-.buildVersion {
-  margin: auto 16px 16px 55px;
-  padding-top: 16px;
-  color: $grey-p;
-  font-size: 12px;
-  overflow-wrap: anywhere;
+  height: 100%;
 }
 
 .title {
@@ -58,8 +43,11 @@
   text-decoration: none;
   cursor: pointer;
 
-  &.logoutButton .itemTitle {
-    color: $red-p;
+  &:last-child {
+
+    .itemTitle {
+      color: $red-p;
+    }
   }
 
   &:hover {
@@ -267,7 +255,7 @@
 
 @media screen and (max-width: 1880px) {
   .navBarContainer {
-    top: 110px;
+    margin-top: 30px;
     width: 300px;
   }
 
@@ -451,12 +439,10 @@
 
 @media screen and (max-width: 1670px) {
   .navBarContainer {
-    top: 90px;
     width: 240px;
   }
 
-  .title,
-  .buildVersion {
+  .title {
     margin-left: 30px;
   }
 

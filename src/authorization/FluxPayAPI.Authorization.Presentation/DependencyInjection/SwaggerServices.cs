@@ -1,4 +1,3 @@
-using System.Reflection;
 using Microsoft.OpenApi;
 
 namespace FluxPayAPI.Authorization.Presentation.DependencyInjection;
@@ -9,14 +8,12 @@ public static class SwaggerServices
     {
         serviceCollection.AddSwaggerGen(c =>
         {
-            var version = typeof(SwaggerServices).Assembly
-                .GetCustomAttributes<AssemblyMetadataAttribute>()
-                .FirstOrDefault(attribute => attribute.Key == "FluxPayBuildVersion")?.Value ?? "dev";
+            var version = Environment.GetEnvironmentVariable("FLUXPAY_BUILD_VERSION");
 
             c.EnableAnnotations();
 
             c.SwaggerDoc("v1",
-                new OpenApiInfo { Title = "FluxPay Authorization API", Version = version });
+                new OpenApiInfo { Title = "FluxPay Authorization API", Version = string.IsNullOrWhiteSpace(version) ? "dev" : version });
         });
 
         return serviceCollection;

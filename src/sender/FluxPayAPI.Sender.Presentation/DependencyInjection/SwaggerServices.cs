@@ -1,4 +1,3 @@
-using System.Reflection;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi;
 
@@ -10,14 +9,12 @@ public static class SwaggerServices
     {
         serviceCollection.AddSwaggerGen(c =>
         {
-            var version = typeof(SwaggerServices).Assembly
-                .GetCustomAttributes<AssemblyMetadataAttribute>()
-                .FirstOrDefault(attribute => attribute.Key == "FluxPayBuildVersion")?.Value ?? "dev";
+            var version = Environment.GetEnvironmentVariable("FLUXPAY_BUILD_VERSION");
             
             c.EnableAnnotations();
 
             c.SwaggerDoc("v1",
-                new OpenApiInfo { Title = "FluxPay Sender API", Version = version });
+                new OpenApiInfo { Title = "FluxPay Sender API", Version = string.IsNullOrWhiteSpace(version) ? "dev" : version });
             
             c.AddSecurityDefinition(
                 "token",
