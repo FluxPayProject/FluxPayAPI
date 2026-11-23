@@ -122,7 +122,7 @@ jobs:
               extraProperties: |
                 sonar.cs.vstest.reportsPaths=$(Agent.TempDirectory)/**/*.trx
                 sonar.cs.opencover.reportsPaths=$(Agent.TempDirectory)/**/*opencover.xml
-                sonar.exclusions=**/Properties/**, **/bin/**, **/obj/**, **/Migrations/**
+                sonar.exclusions=**/Properties/**, **/bin/**, **/obj/**, **/Migrations/**, .deprecated/**
 
           - task: DotNetCoreCLI@2
             displayName: 'Build solution'
