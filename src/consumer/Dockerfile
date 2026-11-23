@@ -53,7 +53,7 @@ COPY --from=shared . shared/
 
 WORKDIR /src/consumer/FluxPayAPI.Consumer.Presentation
 
-ARG VERSION=dev
+ARG FLUXPAY_BUILD_VERSION=dev
 
 RUN dotnet publish \
     FluxPayAPI.Consumer.Presentation.csproj \
@@ -61,7 +61,7 @@ RUN dotnet publish \
     --no-restore \
     -o /app/publish \
     /p:UseAppHost=false \
-    "/p:FluxPayBuildVersion=$VERSION"
+    "/p:FluxPayBuildVersion=$FLUXPAY_BUILD_VERSION"
 
 #######################################################################################################
 # FINAL IMAGE

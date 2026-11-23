@@ -147,7 +147,7 @@ fi
 
 build_args=(
     --tag "$VERSION_TAG"
-    --build-arg "VERSION=$version"
+    --build-arg "FLUXPAY_BUILD_VERSION=$version"
     --cache-from "type=registry,ref=$CACHE_IMAGE_TAG"
 )
 if [[ "$CACHE_IMAGE_TAG" != "$DEFAULT_CACHE_IMAGE_TAG" ]]; then

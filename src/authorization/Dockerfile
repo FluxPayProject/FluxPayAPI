@@ -28,10 +28,10 @@ COPY FluxPay.Client/tsconfig*.json ./
 # Copy application source only after dependencies are installed.
 COPY FluxPay.Client/src ./src
 
-ARG VERSION=dev
+ARG FLUXPAY_BUILD_VERSION=dev
 
 RUN npm run build -- --configuration production --output-path dist/client \
-    --define "FLUXPAY_BUILD_VERSION=$(node -p 'JSON.stringify(process.env.VERSION)')"
+    --define "FLUXPAY_BUILD_VERSION=$(node -p 'JSON.stringify(process.env.FLUXPAY_BUILD_VERSION)')"
 
 #######################################################################################################
 # DOTNET RESTORE
@@ -80,14 +80,14 @@ COPY --from=shared . shared/
 
 WORKDIR /src/authorization/FluxPayAPI.Authorization.Presentation
 
-ARG VERSION=dev
+ARG FLUXPAY_BUILD_VERSION=dev
 
 RUN dotnet publish \
     -c Release \
     --no-restore \
     -o /app/publish \
     /p:UseAppHost=false \
-    "/p:FluxPayBuildVersion=$VERSION"
+    "/p:FluxPayBuildVersion=$FLUXPAY_BUILD_VERSION"
 
 #######################################################################################################
 # FINAL IMAGE
