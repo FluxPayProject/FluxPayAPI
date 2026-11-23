@@ -6,6 +6,10 @@
     <LangVersion>12</LangVersion>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(FluxPayBuildVersion)' != ''">
+    <AssemblyMetadata Include="FluxPayBuildVersion" Value="$(FluxPayBuildVersion)" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="10.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="10.0.6" />

@@ -4,6 +4,8 @@ import { AuthorizationApiService } from '../../services/api/authorization-api.se
 import {ProfileStateService} from "../../services/state/profile-state.service";
 import {UserRole} from "../../types/enums/UserRole";
 
+declare const FLUXPAY_BUILD_VERSION: string;
+
 @Component({
   standalone: false,
   selector: 'app-navbar',
@@ -19,6 +21,8 @@ import {UserRole} from "../../types/enums/UserRole";
   ]
 })
 export class NavbarComponent {
+  protected readonly buildVersion = typeof FLUXPAY_BUILD_VERSION === 'undefined' ? 'dev' : FLUXPAY_BUILD_VERSION;
+
   //observable
   public user$ = this._profileStateService.user$;
 

@@ -6,18 +6,18 @@ namespace FluxPayAPI.Consumer.Presentation.DependencyInjection;
 
 public static class SwaggerServices
 {
-    private const string DefaultVersion = "1.0.0.0";
-    
     public static IServiceCollection AddSwagger(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddSwaggerGen(c =>
         {
-            var version = Assembly.GetEntryAssembly()?.GetName().Version?.ToString() ?? DefaultVersion;
+            var version = typeof(SwaggerServices).Assembly
+                .GetCustomAttributes<AssemblyMetadataAttribute>()
+                .FirstOrDefault(attribute => attribute.Key == "FluxPayBuildVersion")?.Value ?? "dev";
             
             c.EnableAnnotations();
 
             c.SwaggerDoc("v1",
-                new OpenApiInfo { Title = $"FluxPay Consumer API {version}", Version = $"v{version}" });
+                new OpenApiInfo { Title = "FluxPay Consumer API", Version = version });
             
             c.AddSecurityDefinition(
                 "token",

@@ -10,6 +10,10 @@
       <DocumentationFile>bin\Debug\net8.0\FluxPayAPI.Sender.Presentation.xml</DocumentationFile>
     </PropertyGroup>
 
+    <ItemGroup Condition="'$(FluxPayBuildVersion)' != ''">
+      <AssemblyMetadata Include="FluxPayBuildVersion" Value="$(FluxPayBuildVersion)" />
+    </ItemGroup>
+
     <ItemGroup>
       <ProjectReference Include="..\FluxPayAPI.Sender.BusinessLogic\FluxPayAPI.Sender.BusinessLogic.csproj" />
       <ProjectReference Include="..\FluxPayAPI.Sender.Domain\FluxPayAPI.Sender.Domain.csproj" />

@@ -139,7 +139,17 @@ echo "============================================================"
 
 echo "Building image: $VERSION_TAG"
 
-build_args=(--tag "$VERSION_TAG" --cache-from "type=registry,ref=$CACHE_IMAGE_TAG")
+image_name_and_tag="${VERSION_TAG##*/}"
+version=dev
+if [[ "$image_name_and_tag" == *:* ]]; then
+    version="${image_name_and_tag##*:}"
+fi
+
+build_args=(
+    --tag "$VERSION_TAG"
+    --build-arg "VERSION=$version"
+    --cache-from "type=registry,ref=$CACHE_IMAGE_TAG"
+)
 if [[ "$CACHE_IMAGE_TAG" != "$DEFAULT_CACHE_IMAGE_TAG" ]]; then
     build_args+=(--cache-from "type=registry,ref=$DEFAULT_CACHE_IMAGE_TAG")
 fi
