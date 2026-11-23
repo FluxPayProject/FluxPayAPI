@@ -46,29 +46,15 @@
       searchedUsers: (searchedUsers$ | async) || [],
       searchText: (searchText$ | async) || ''
     } as data">
-      <div class="userList" *ngIf="data.users.length > 0 && data.searchText.length === 0; else noUsers" [@userListAnimation]="">
-        <div *ngFor="let user of data.users; trackBy: identifyUserDto" class="userItem" (click)="onClickGetUserTransactionsInfoHandler(user.id)">
-          <button type="button" class="userItemUsername" (click)="$event.stopPropagation(); onClickGetUserTransactionsInfoHandler(user.id)">
-            Username: {{_textService.pullUsernameFromMail(user.email)}}
-          </button>
-          <p class="userItemBalance">
-            Balance: €{{user.wallet.balance}}
-          </p>
-          <p class="userItemRole">
-            Role: {{user.userRole === 0 ? "User" : "Admin"}}
-          </p>
-          <p class="userItemStatus">
-            <span>Status:</span>
-            <select aria-label="User status" class="userItemStatusSelect" [(ngModel)]="user.userStatus" (click)="$event.stopPropagation();" (change)="onChangeSuspendOrMakeActiveHandler(user)">
-              <option value="{{UserStatus.Active}}">Active</option>
-              <option value="{{UserStatus.Suspended}}">Suspended</option>
-            </select>
-          </p>
-        </div>
-      </div>
-      <ng-template #noUsers>
-        <div class="userList" *ngIf="data.searchedUsers.length > 0 && data.searchText.length > 0" [@userListAnimation]="">
-          <div *ngFor="let user of data.searchedUsers; trackBy: identifyUserDto" class="userItem" (click)="onClickGetUserTransactionsInfoHandler(user.id)">
+      <ng-container *ngIf="data.searchText.length === 0; else searchResults">
+        <ng-container *ngTemplateOutlet="userList; context: { $implicit: data.users }"></ng-container>
+      </ng-container>
+      <ng-template #searchResults>
+        <ng-container *ngTemplateOutlet="userList; context: { $implicit: data.searchedUsers }"></ng-container>
+      </ng-template>
+      <ng-template #userList let-users>
+        <div class="userList" *ngIf="users.length > 0" [@userListAnimation]="">
+          <div *ngFor="let user of users; trackBy: identifyUserDto" class="userItem" (click)="onClickGetUserTransactionsInfoHandler(user.id)">
             <button type="button" class="userItemUsername" (click)="$event.stopPropagation(); onClickGetUserTransactionsInfoHandler(user.id)">
               Username: {{_textService.pullUsernameFromMail(user.email)}}
             </button>

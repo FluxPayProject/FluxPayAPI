@@ -1,3 +1,4 @@
+import {listLoaderAnimation, rightBarAnimation} from '../../animations/outlet-animations';
 import { SkeletonModule } from 'primeng/skeleton';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { FormsModule } from '@angular/forms';
@@ -30,22 +31,8 @@ import {MessageService} from "primeng/api";
         animate('.4s', style({ height: "*", opacity: "*", "padding-top": "*", "padding-bottom": "*", margin: "*", "min-height": "*" }))
       ])
     ]),
-    trigger('rightBarAnimation', [
-      transition(':enter', [
-        style({ transform: 'translateY(10px)', opacity: 0 }),
-        animate('.25s', style({ transform: 'translateY(0px)', opacity: 1 }))
-      ])
-    ]),
-    trigger("ticketListLoaderAnimation", [
-      transition(":enter", [
-        style({transform: 'translateY(10px)', opacity: 0}),
-        animate('.25s', style({transform: 'translateY(0px)', opacity: 1}))
-      ]),
-      transition(":leave", [
-        style({transform: 'translateY(0px)', opacity: 1}),
-        animate('.25s', style({transform: 'translateY(10px)', opacity: 0}))
-      ])
-    ])
+    rightBarAnimation,
+    listLoaderAnimation('ticketListLoaderAnimation')
   ]
 })
 export class SupportOutletComponent implements OnInit, OnDestroy {

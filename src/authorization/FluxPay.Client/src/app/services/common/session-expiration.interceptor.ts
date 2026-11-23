@@ -1,18 +1,19 @@
 import {Injectable, Injector} from '@angular/core';
 import {HttpErrorResponse, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
 import {catchError, throwError} from 'rxjs';
+import {ConfigService} from './config.service';
 import {ProfileStateService} from '../state/profile-state.service';
 
 @Injectable()
 export class SessionExpirationInterceptor implements HttpInterceptor {
   private checkingSession = false;
 
-  constructor(private readonly injector: Injector) {}
+  constructor(private readonly injector: Injector, private readonly config: ConfigService) {}
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler) {
     return next.handle(request).pipe(catchError((error: unknown) => {
-      const baseUrl = localStorage.getItem('serverUrl');
-      if (error instanceof HttpErrorResponse && error.status === 401 && baseUrl &&
+      const baseUrl = this.config.getServerUrl();
+      if (error instanceof HttpErrorResponse && error.status === 401 &&
           request.url.startsWith(baseUrl) && /^(consumer|sender)\//.test(request.url.slice(baseUrl.length))) {
         void this.checkSession();
       }

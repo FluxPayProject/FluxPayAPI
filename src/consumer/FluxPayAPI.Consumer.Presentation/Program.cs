@@ -5,6 +5,7 @@ using FluxPayAPI.Consumer.Domain.Constants;
 using FluxPayAPI.Consumer.Persistence;
 using FluxPayAPI.Consumer.Presentation.DependencyInjection;
 using FluxPayAPI.Consumer.Presentation.Routing;
+using FluxPayAPI.Shared.Application.Extensions;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -24,7 +25,7 @@ builder.Services.AddControllers(o =>
 });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwagger();
+builder.Services.AddFluxPaySwagger("FluxPay Consumer API");
 builder.Services.AddSignalR();
 builder.Services.AddDbContext<DatabaseContext>(options =>
 {

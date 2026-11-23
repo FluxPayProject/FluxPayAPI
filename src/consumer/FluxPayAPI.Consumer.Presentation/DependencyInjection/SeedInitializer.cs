@@ -43,73 +43,12 @@ public static class SeedInitializer
         
         // transaction seeds
         var transactionList = new List<TransactionEntity>();
-
-        
-        for (var i = 0; i < 45; i++)
-        {
-            var num = RandomNumberGenerator.GetInt32(1, 3);
-
-            var transaction = num == 1 
-                ? new TransactionEntity(dima.Id, bob.Id, 10000, TransactionType.FromUserToUser, DateTime.UtcNow) 
-                : new TransactionEntity(bob.Id, dima.Id, 10000, TransactionType.FromUserToUser, DateTime.UtcNow);
-
-            transactionList.Add(transaction);
-        }
-        
-        for (int i = 0; i < 20; i++)
-        {
-            var num = RandomNumberGenerator.GetInt32(1, 3);
-
-            var transaction = num == 1 
-                ? new TransactionEntity(alex.Id, alice.Id, 1000, TransactionType.FromUserToUser, DateTime.UtcNow)
-                : new TransactionEntity(alice.Id, alex.Id, 1000, TransactionType.FromUserToUser, DateTime.UtcNow);
-
-            transactionList.Add(transaction);
-        }
-        
-        for (int i = 0; i < 20; i++)
-        {
-            var num = RandomNumberGenerator.GetInt32(1, 3);
-
-            var transaction = num == 1 
-                ? new TransactionEntity(dima.Id, sasha.Id, 700, TransactionType.FromUserToUser, DateTime.UtcNow)
-                : new TransactionEntity(sasha.Id, dima.Id, 700, TransactionType.FromUserToUser, DateTime.UtcNow);
-
-            transactionList.Add(transaction);
-        }
-        
-        for (int i = 0; i < 10; i++)
-        {
-            var num = RandomNumberGenerator.GetInt32(1, 3);
-
-            var transaction = num == 1 
-                ? new TransactionEntity(dima.Id, bob.Id, 8000, TransactionType.FromUserToUser, DateTime.UtcNow)
-                : new TransactionEntity(bob.Id, dima.Id, 8000, TransactionType.FromUserToUser, DateTime.UtcNow);
-
-            transactionList.Add(transaction);
-        }
-        
-        for (int i = 0; i < 15; i++)
-        {
-            var num = RandomNumberGenerator.GetInt32(1, 3);
-
-            var transaction = num == 1 
-                ? new TransactionEntity(bob.Id, sasha.Id, 1000, TransactionType.FromUserToUser, DateTime.UtcNow)
-                : new TransactionEntity(sasha.Id, bob.Id, 1000, TransactionType.FromUserToUser, DateTime.UtcNow);
-
-            transactionList.Add(transaction);
-        }
-        
-        for (int i = 0; i < 15; i++)
-        {
-            var num = RandomNumberGenerator.GetInt32(1, 3);
-
-            var transaction = num == 1 
-                ? new TransactionEntity(dima.Id, alex.Id, 7775, TransactionType.FromUserToUser, DateTime.UtcNow)
-                : new TransactionEntity(alex.Id, dima.Id, 7775, TransactionType.FromUserToUser, DateTime.UtcNow);
-
-            transactionList.Add(transaction);
-        }
+        AddTransactions(transactionList, dima, bob, 10000, 45);
+        AddTransactions(transactionList, alex, alice, 1000, 20);
+        AddTransactions(transactionList, dima, sasha, 700, 20);
+        AddTransactions(transactionList, dima, bob, 8000, 10);
+        AddTransactions(transactionList, bob, sasha, 1000, 15);
+        AddTransactions(transactionList, dima, alex, 7775, 15);
 
         context.TransactionEntities.AddRange(transactionList);
         
@@ -125,5 +64,15 @@ public static class SeedInitializer
         dima.UpdateUserRole(UserRole.Admin);
         
         await context.SaveChangesAsync();
+    }
+
+    private static void AddTransactions(
+        List<TransactionEntity> transactions, UserEntity first, UserEntity second, decimal amount, int count)
+    {
+        for (var i = 0; i < count; i++)
+        {
+            var (from, to) = RandomNumberGenerator.GetInt32(2) == 0 ? (first, second) : (second, first);
+            transactions.Add(new TransactionEntity(from.Id, to.Id, amount, TransactionType.FromUserToUser, DateTime.UtcNow));
+        }
     }
 }

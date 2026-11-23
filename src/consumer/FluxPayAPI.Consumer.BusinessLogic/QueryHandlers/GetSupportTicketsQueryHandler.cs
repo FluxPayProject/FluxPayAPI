@@ -27,32 +27,11 @@ public class GetSupportTicketsQueryHandler : ICommandHandler<GetSupportsTicketsQ
             return new Result<List<SupportTicketDto>>(new DbEntityNotFoundError(ResponseMessages.RequesterNotFound));
         }
 
-        var cursorQuery = _context.SupportTicketEntities.AsQueryable();
-        if (command.CursorId is Guid cursorId)
-        {
-            cursorQuery = cursorQuery.Where(x => EF.Functions.LessThan(
-                ValueTuple.Create(x.CreatedAt, x.Id), ValueTuple.Create(command.FromDateTime, cursorId)));
-        }
-        else
-        {
-            cursorQuery = cursorQuery.Where(x => x.CreatedAt < command.FromDateTime);
-        }
-
-        var supportTickets = await cursorQuery
-            .OrderByDescending(x => x.CreatedAt)
-            .ThenByDescending(x => x.Id)
+        var supportTickets = await _context.SupportTicketEntities
             .Where(x => x.UserId == requester.Id)
-            .Select(x => new SupportTicketDto(
-                x.Id,
-                x.TransactionId,
-                x.UserId,
-                x.WalletId,
-                x.TicketReason,
-                x.TicketJustification,
-                x.TicketStatus,
-                x.CreatedAt)
-            )
+            .Before(command.FromDateTime, command.CursorId)
             .Take(command.Limit)
+            .ToDto()
             .ToListAsync();
 
         return new Result<List<SupportTicketDto>>(supportTickets);

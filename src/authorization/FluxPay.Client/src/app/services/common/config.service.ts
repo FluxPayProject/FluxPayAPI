@@ -1,16 +1,12 @@
-import { Injectable } from '@angular/core';
-import {ErrorMessageConstants} from "../../constants/ErrorMessageConstants";
+import {Inject, Injectable, InjectionToken} from '@angular/core';
+
+export const SERVER_URL = new InjectionToken<string>('FluxPay API base URL');
 
 @Injectable({
   providedIn: 'root'
 })
 export class ConfigService {
-  constructor() { }
+  constructor(@Inject(SERVER_URL) private readonly serverUrl: string) {}
 
-  public getServerUrl = () => {
-    const serverUrl = localStorage.getItem("serverUrl");
-    if (!serverUrl) throw new Error(ErrorMessageConstants.ServerUrlIsUndefined);
-
-    return serverUrl;
-  };
+  public getServerUrl = () => this.serverUrl;
 }
