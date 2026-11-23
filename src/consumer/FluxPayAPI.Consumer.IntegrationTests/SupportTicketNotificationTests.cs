@@ -20,7 +20,7 @@ namespace FluxPayAPI.Consumer.IntegrationTests;
 public class SupportTicketNotificationTests
 {
     [Fact]
-    public async Task SendsCommittedTicketAndPaymentResultsToTheRightUsers()
+    public async Task SendsCommittedTicketResultsAndNotifiesBothPaymentUsersAfterRestart()
     {
         await using var postgres = new PostgreSqlBuilder("postgres:16").Build();
         await postgres.StartAsync();
@@ -38,8 +38,8 @@ public class SupportTicketNotificationTests
         await db.SaveChangesAsync();
 
         var resolved = new TaskCompletionSource<SupportTicketDto>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var senderNotified = new TaskCompletionSource<(Guid? OperationId, decimal Balance, bool TransactionExists)>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var recipientNotified = new TaskCompletionSource<Guid?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var senderNotified = new TaskCompletionSource<(Guid? OperationId, decimal Balance, bool TransactionExists, Guid TransactionId)>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var recipientNotified = new TaskCompletionSource<(Guid? OperationId, decimal Balance, Guid TransactionId)>(TaskCreationOptions.RunContinuationsAsynchronously);
         var requester = new Mock<INotificationHub>();
         requester.Setup(x => x.SupportTicketResolvedAsync(It.IsAny<SupportTicketDto>()))
             .Returns(async (SupportTicketDto dto) =>
@@ -54,14 +54,15 @@ public class SupportTicketNotificationTests
                 await using var reader = new DatabaseContext(options);
                 var wallet = await reader.WalletEntities.SingleAsync(w => w.Id == userWallet.Id);
                 senderNotified.TrySetResult((operationId, wallet.Balance,
-                    await reader.TransactionEntities.AnyAsync(t => t.Id == dto.Id)));
+                    await reader.TransactionEntities.AnyAsync(t => t.Id == dto.Id), dto.Id));
             });
         var recipient = new Mock<INotificationHub>();
         recipient.Setup(x => x.TransactionSucceededAsync(It.IsAny<TransactionDto>(), It.IsAny<Guid?>()))
-            .Returns((TransactionDto _, Guid? operationId) =>
+            .Returns(async (TransactionDto dto, Guid? operationId) =>
             {
-                recipientNotified.TrySetResult(operationId);
-                return Task.CompletedTask;
+                await using var reader = new DatabaseContext(options);
+                var wallet = await reader.WalletEntities.SingleAsync(w => w.Id == adminWallet.Id);
+                recipientNotified.TrySetResult((operationId, wallet.Balance, dto.Id));
             });
         var clients = new Mock<IHubClients<INotificationHub>>();
         clients.Setup(x => x.User(user.Id)).Returns(requester.Object);
@@ -69,7 +70,7 @@ public class SupportTicketNotificationTests
         var hub = new Mock<IHubContext<NotificationHub, INotificationHub>>();
         hub.SetupGet(x => x.Clients).Returns(clients.Object);
 
-        using var host = Host.CreateDefaultBuilder().ConfigureServices(services =>
+        IHost BuildConsumerHost() => Host.CreateDefaultBuilder().ConfigureServices(services =>
         {
             services.AddSingleton(hub.Object);
             services.AddDbContext<DatabaseContext>(o => o.UseNpgsql(postgres.GetConnectionString()));
@@ -91,23 +92,37 @@ public class SupportTicketNotificationTests
             });
         }).Build();
 
-        await host.StartAsync();
+        using var firstHost = BuildConsumerHost();
+        await firstHost.StartAsync();
         try
         {
-            var bus = host.Services.GetRequiredService<IBus>();
+            var bus = firstHost.Services.GetRequiredService<IBus>();
             await bus.Publish(new SupportTicketResolvedEventMessage(Guid.NewGuid(), admin.Id, ticket.Id, "Reviewed", DateTime.UtcNow));
             var result = await resolved.Task.WaitAsync(TimeSpan.FromSeconds(15));
             Assert.Equal(ticket.Id, result.Id);
             Assert.Equal("Reviewed", result.TicketJustification);
             recipient.Verify(x => x.SupportTicketResolvedAsync(It.IsAny<SupportTicketDto>()), Times.Never);
+        }
+        finally
+        {
+            await firstHost.StopAsync();
+        }
 
+        using var host = BuildConsumerHost();
+        await host.StartAsync();
+        try
+        {
+            var bus = host.Services.GetRequiredService<IBus>();
             var operationId = Guid.NewGuid();
             await bus.Publish(new TransactionUserToUserCreatedEventMessage(Guid.NewGuid(), user.Id, admin.Id, 2, DateTime.UtcNow, operationId));
             var payment = await senderNotified.Task.WaitAsync(TimeSpan.FromSeconds(15));
             Assert.Equal(operationId, payment.OperationId);
             Assert.Equal(3m, payment.Balance);
             Assert.True(payment.TransactionExists);
-            Assert.Null(await recipientNotified.Task.WaitAsync(TimeSpan.FromSeconds(15)));
+            var receivedPayment = await recipientNotified.Task.WaitAsync(TimeSpan.FromSeconds(15));
+            Assert.Null(receivedPayment.OperationId);
+            Assert.Equal(2m, receivedPayment.Balance);
+            Assert.Equal(payment.TransactionId, receivedPayment.TransactionId);
         }
         finally
         {

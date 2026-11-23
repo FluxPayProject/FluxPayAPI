@@ -67,9 +67,13 @@ export class SupportOutletComponent implements OnInit, OnDestroy {
       private _messageService: MessageService
   ) {}
 
-  async ngOnInit() {
+  ngOnInit() {
     const date = new Date();
-    if (this.supportTickets$.getValue().length === 0) await this._supportTicketStateService.getSupportTicketsAsync(date, 10);
+    if (this.supportTickets$.getValue().length === 0) {
+      void this._supportTicketStateService.getSupportTicketsAsync(date, 10).catch(() => {
+        this._messageService.add({severity: 'error', summary: 'Error', detail: 'Could not load support tickets.'});
+      });
+    }
 
     this.documentScrollSub$ = fromEvent(document, "scroll")
       .pipe(

@@ -7,8 +7,7 @@ import {animate, animateChild, query, stagger, style, transition, trigger} from 
 import {ContactsStateService} from "../../services/state/contacts-state.service";
 import {ProfileStateService} from "../../services/state/profile-state.service";
 import {
-  BehaviorSubject,
-  debounceTime, filter, Subscription
+  BehaviorSubject, catchError, EMPTY, filter, Subscription, switchMap, timer
 } from "rxjs";
 import {TextService} from "../../services/common/text.service";
 import {IContactDto} from "../../types/interfaces/consumer/IContactDto";
@@ -74,21 +73,31 @@ export class ContactsOutletComponent implements OnInit, OnDestroy{
   async ngOnInit() {
     if (!this._profileStateService.isAuthenticated) return;
 
-    await this._contactsStateService.getContactsAsync();
+    this.routerSubscription.add(this.searchText$.pipe(
+      switchMap(text => {
+        this._contactsStateService.clearSearchContacts();
+        if (!text.trim()) return EMPTY;
 
-    this.searchText$
-        .pipe(
-            filter(x => x.trim() !== ''),
-            debounceTime(400))
-        .subscribe(async x => await this._contactsStateService.getSearchContactsAsync(x));
+        return timer(400).pipe(
+          switchMap(() => this._contactsStateService.getSearchContactsAsync(text)),
+          catchError(() => {
+            this._messageService.add({severity: 'error', summary: 'Error', detail: 'Could not search contacts.'});
+            return EMPTY;
+          })
+        );
+      })
+    ).subscribe());
 
-    this.searchText$
-        .pipe(filter(x => x === ''))
-        .subscribe(_ => this._contactsStateService.clearSearchContacts())
+    try {
+      await this._contactsStateService.getContactsAsync();
+    } catch {
+      this._messageService.add({severity: 'error', summary: 'Error', detail: 'Could not load contacts.'});
+    }
   }
 
   ngOnDestroy() {
     this.routerSubscription.unsubscribe();
+    this._contactsStateService.clearSearchContacts();
   }
 
   //events

@@ -9,8 +9,11 @@
       <p-select class="depositInput" [options]="creditCardIdArray" [(ngModel)]="creditCardId" placeholder="Credit Card Id" [editable]="true" />
       <input aria-label="Deposit amount" type="text" class="depositInput" [(ngModel)]="amount" placeholder="Amount" inputmode="numeric"/>
       <button type="button" [disabled]="paymentSubmission.isPending('deposit')" class="depositOkButton" (click)="onClickTopUpAccountBalanceHandler()">
-        {{paymentSubmission.isPending('deposit') ? 'Processing…' : 'Ok'}}
+        {{paymentSubmission.isResultDelayed('deposit') ? 'Awaiting confirmation' : paymentSubmission.isPending('deposit') ? 'Processing…' : 'Ok'}}
       </button>
+      @if (paymentSubmission.isResultDelayed('deposit')) {
+        <p role="status">The payment result is still unconfirmed. Check your transaction history before trying again.</p>
+      }
     </div>
   </div>
 </div>

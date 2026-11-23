@@ -1,6 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { ProfileStateService } from '../../services/state/profile-state.service';
-import * as signalR from '@microsoft/signalr';
 import {SignalrService} from "../../services/common/signalr.service";
 
 @Component({
@@ -10,14 +9,24 @@ import {SignalrService} from "../../services/common/signalr.service";
   styleUrls: ['./layout.component.scss']
 })
 export class LayoutComponent implements OnInit {
+  protected readonly authenticationUnavailable = signal(false);
+
   constructor(
     protected _profileStateService: ProfileStateService,
     private _signalrService: SignalrService) { }
 
   public async ngOnInit() {
-    const getAuthenticationResult = await this._profileStateService.getAuthenticationAsync();
+    await this.checkAuthentication();
+  }
 
-    if (getAuthenticationResult.authenticated) {
+  protected async checkAuthentication() {
+    this.authenticationUnavailable.set(false);
+    const result = await this._profileStateService.getAuthenticationAsync().catch(() => {
+      this.authenticationUnavailable.set(true);
+      return null;
+    });
+
+    if (result?.authenticated) {
       await this._profileStateService.getProfileAsync();
 
       await this._signalrService.build();

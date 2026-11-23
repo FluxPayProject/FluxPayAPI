@@ -38,11 +38,12 @@ public class GetTransactionsBySearchQueryHandler : ICommandHandler<GetTransactio
             cursorQuery = cursorQuery.Where(x => x.CreatedAt < command.FromDateTime);
         }
 
+        var searchText = command.SearchText.ToLowerInvariant();
         var transactions = await cursorQuery
             .OrderByDescending(x => x.CreatedAt)
             .ThenByDescending(x => x.Id)
             .Where(x => x.FromUserId == command.RequesterId || x.ToUserId == command.RequesterId)
-            .Where(x => EF.Functions.Like(x.Id.ToString(), $"%{command.SearchText}%"))
+            .Where(x => x.Id.ToString().Contains(searchText))
             .Take(command.Limit)
             .Select(x => new TransactionDto(
                 x.Id,

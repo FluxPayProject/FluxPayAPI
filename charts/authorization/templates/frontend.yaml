@@ -5,4 +5,4 @@ metadata:
   name: {{ printf "%s-frontend" $name | quote }}
   namespace: {{ .Release.Namespace | quote }}
 data:
-  config.json: {{ dict "baseUrl" .Values.frontend.baseUrl | toJson | quote }}
+  config.json: {{ pick .Values.frontend "baseUrl" "primeUiLicense" | toJson | quote }}

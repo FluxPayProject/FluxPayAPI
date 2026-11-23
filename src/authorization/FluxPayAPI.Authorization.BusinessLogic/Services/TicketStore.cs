@@ -196,6 +196,11 @@ public class TicketStore : ITicketStore
         }
 
         var refreshToken = deserializedTicket.Properties.GetTokenValue(TokenTypes.RefreshToken);
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            await RemoveAsync(key);
+            return;
+        }
 
         var response = await RequestRefreshTokenAsync(refreshToken);
 
@@ -254,7 +259,7 @@ public class TicketStore : ITicketStore
         {
             var refreshToken = deserializedTicket.Properties.GetTokenValue(TokenTypes.RefreshToken);
 
-            if (refreshToken == null)
+            if (string.IsNullOrWhiteSpace(refreshToken))
             {
                 await RemoveAsync(key);
                 return null;

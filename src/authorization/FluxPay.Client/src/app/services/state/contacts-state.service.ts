@@ -30,16 +30,19 @@ export class ContactsStateService {
   async reconcileRejectedContact(contactId: string, action: 'add' | 'delete') {
     const key = `${action}:${contactId}`;
     if (this.pending.has(key)) this.rejected.add(key);
+    await this.refreshContactsAsync();
+  }
+
+  async refreshContactsAsync() {
     await this.getContactsAsync();
     if (this.searchText.trim()) await this.getSearchContactsAsync(this.searchText);
   }
 
   //requests
   async getContactsAsync() {
+    this.wasContactsRequested = true;
     const getContacts$ = this._contactsApiService.getContacts();
     const getContactsResult = await firstValueFrom(getContacts$);
-
-    this.wasContactsRequested = true;
 
     this.contacts$.next(getContactsResult.response);
 

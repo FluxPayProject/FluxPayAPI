@@ -39,8 +39,8 @@ export class ContactsApiService extends ApiBaseService {
   // GET consumer/contacts/search
   public getSearchContacts(email: string) : Observable<IResult<IContactDto[]>> {
     return this.httpClient.get<IResult<IContactDto[]>>(
-        this.baseUrl + this.consumerContactsRoute + `/search?email=${email}`,
-        { withCredentials: true }
+        this.baseUrl + this.consumerContactsRoute + "/search",
+        { params: { email }, withCredentials: true }
     );
   }
 

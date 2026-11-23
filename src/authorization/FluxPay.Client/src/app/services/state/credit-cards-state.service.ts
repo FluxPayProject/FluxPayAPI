@@ -29,11 +29,10 @@ export class CreditCardsStateService {
 
   //requests
   public async getCreditCardsAsync() {
+    this.wereCardsRequested = true;
     const getCreditCardsSub$ = this._creditCardApiService.getCreditCards();
     const getCreditCardsResult = await firstValueFrom<IResult<ICreditCardDto[]>>(getCreditCardsSub$);
     this.cards$.next(getCreditCardsResult.response);
-
-    this.wereCardsRequested = true;
 
     return getCreditCardsResult;
   }

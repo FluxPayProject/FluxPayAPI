@@ -55,6 +55,11 @@ public class PaginationCursorTests
 
             historyIds.Should().BeEquivalentTo(transactions.Select(x => x.Id));
             searchIds.Should().BeEquivalentTo(transactions.Select(x => x.Id));
+            var fullId = transactions[0].Id;
+            var uppercaseMatch = await bySearch.HandleAsync(new GetTransactionsBySearchQuery(user.Id, fullId.ToString().ToUpperInvariant(), 2, initial));
+            var literalMatch = await bySearch.HandleAsync(new GetTransactionsBySearchQuery(user.Id, "%", 2, initial));
+            uppercaseMatch.Response.Select(transaction => transaction.Id).Should().Equal(fullId);
+            literalMatch.Response.Should().BeEmpty();
             userIds.Should().BeEquivalentTo(transactions.Select(x => x.Id));
             supportIds.Should().BeEquivalentTo(tickets.Select(x => x.Id));
             adminTicketIds.Should().BeEquivalentTo(tickets.Select(x => x.Id));

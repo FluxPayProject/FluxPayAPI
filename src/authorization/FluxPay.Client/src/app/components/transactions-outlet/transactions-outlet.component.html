@@ -34,7 +34,7 @@
           </p>
           <span>
             <ng-container *ngIf="user$ | async as user; else userIsNull">
-              <p class="userInfoId" appCopyText="{{user.id}}" pTooltip="{{user.id}}">ID: {{user.id}}</p>
+              <p class="userInfoId" appCopyText="{{user.id}}" copyLabel="Copy user ID" pTooltip="{{user.id}}">ID: {{user.id}}</p>
             </ng-container>
             <ng-template #userIsNull>
               <p-skeleton class="skeletonDefault" />
@@ -54,17 +54,17 @@
       searchTransactions: (searchedTransactions$ | async) || [],
       searchText: (searchText$ | async) || ''
     } as data">
-      <div class="transactionList" [@transactionsAnimation]=""
+      <div class="transactionList" tabindex="0" role="region" aria-label="Transaction history" [@transactionsAnimation]=""
            *ngIf="data.transactions.length > 0 && data.searchText.length === 0 && _transactionsStateService.wasRequested; else searchTransactionTemplate"
            (scroll)="onScrollTransactionsHandler($event)">
         <div *ngFor="let transaction of data.transactions; trackBy: identifyTransactionDto"
              class="transactionItem {{getTransactionColorClassName(transaction)}}">
-          <svg-icon src="../../../assets/svg/transaction.svg" appCopyText="{{transaction.id}}" pTooltip="{{transaction.id}}" class="transactionSvg" />
+          <svg-icon src="../../../assets/svg/transaction.svg" appCopyText="{{transaction.id}}" copyLabel="Copy transaction ID" pTooltip="{{transaction.id}}" class="transactionSvg" />
           <div class="transactionItemInfo">
-            <p class="transactionItemFrom" appCopyText="{{transaction.fromUserId}}" pTooltip="{{transaction.fromUserId}}">
+            <p class="transactionItemFrom" appCopyText="{{transaction.fromUserId}}" copyLabel="Copy sender ID" pTooltip="{{transaction.fromUserId}}">
               From: {{transaction.fromUserId}}
             </p>
-            <p class="transactionItemTo" appCopyText="{{transaction.toUserId}}" pTooltip="{{transaction.toUserId}}">
+            <p class="transactionItemTo" appCopyText="{{transaction.toUserId}}" copyLabel="Copy recipient ID" pTooltip="{{transaction.toUserId}}">
               To: {{transaction.toUserId}}
             </p>
             <p class="transactionItemAmount">
@@ -80,11 +80,12 @@
         </div>
       </div>
       <ng-template #searchTransactionTemplate>
-        <div class="transactionList" [@transactionsAnimation]="" (scroll)="onScrollSearchTransactionsHandler($event)"
+        <div class="transactionList" tabindex="0" role="region" aria-label="Transaction search results"
+             [@transactionsAnimation]="" (scroll)="onScrollSearchTransactionsHandler($event)"
              *ngIf="data.searchTransactions.length > 0 && data.searchText.length > 0">
           <div *ngFor="let transaction of data.searchTransactions; trackBy: identifyTransactionDto"
                class="transactionItem {{getTransactionColorClassName(transaction)}}">
-            <svg-icon src="../../../assets/svg/transaction.svg" class="transactionSvg" />
+            <svg-icon src="../../../assets/svg/transaction.svg" appCopyText="{{transaction.id}}" copyLabel="Copy transaction ID" pTooltip="{{transaction.id}}" class="transactionSvg" />
             <div class="transactionItemInfo">
               <p class="transactionItemFrom">
                 From: {{transaction.fromUserId}}
@@ -129,8 +130,11 @@
       <input aria-label="Transaction amount" type="text" class="createNewTransactionAmountInput" (keydown.enter)="$event.preventDefault()" inputmode="numeric"
              placeholder="Amount: €0" [(ngModel)]="amount" (keyup.enter)="sendMoneyToUser()"/>
       <button type="button" [disabled]="paymentSubmission.isPending('transfer')" class="createNewTransactionOkButton" (click)="sendMoneyToUser()">
-        {{paymentSubmission.isPending('transfer') ? 'Processing…' : 'Ok'}}
+        {{paymentSubmission.isResultDelayed('transfer') ? 'Awaiting confirmation' : paymentSubmission.isPending('transfer') ? 'Processing…' : 'Ok'}}
       </button>
+      @if (paymentSubmission.isResultDelayed('transfer')) {
+        <p role="status">The payment result is still unconfirmed. Check your transaction history before trying again.</p>
+      }
     </div>
   </div>
 </div>

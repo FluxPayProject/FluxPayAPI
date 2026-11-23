@@ -28,11 +28,11 @@
           </textarea>
           <div class="ticketItemButtonContainer">
             <button class="ticketItemRollBackButton"
-                    [disabled]="isTransactionRollBacked(ticket.transactionId)"
+                    [disabled]="pendingRollbacks().has(ticket.transactionId) || rollbackRequests().has(ticket.transactionId)"
                     (click)="onClickRollBackHandler(ticket.transactionId)">
-              {{isTransactionRollBacked(ticket.transactionId) ? "Roll Backed" : "Roll Back"}}
+              {{rollbackRequests().has(ticket.transactionId) ? "Rollback requested" : "Roll Back"}}
             </button>
-            <button class="ticketItemOkButton" (click)="onClickResolveTicketHandler(ticket.id, ticket.ticketJustification)">
+            <button class="ticketItemOkButton" [disabled]="resolvingTickets().has(ticket.id)" (click)="onClickResolveTicketHandler(ticket.id, ticket.ticketJustification)">
               Ok
             </button>
           </div>

@@ -31,6 +31,22 @@ public class TicketStoreTests
     }
 
     [Fact]
+    public async Task ScheduledRenewalWithoutRefreshTokenEndsExpiredSession()
+    {
+        using var fixture = new Fixture();
+        var id = Guid.NewGuid();
+        var expired = Ticket(DateTimeOffset.UtcNow.AddMinutes(-1));
+        await fixture.Save(id, expired);
+        fixture.Cache.Set(id.ToString(), expired);
+
+        await fixture.Store.RenewAsync(id.ToString(), null);
+
+        Assert.False(fixture.Cache.TryGetValue(id.ToString(), out _));
+        using var scope = fixture.Services.CreateScope();
+        Assert.Null(await scope.ServiceProvider.GetRequiredService<DatabaseContext>().UserSessions.FindAsync(id));
+    }
+
+    [Fact]
     public async Task RemovingSessionEvictsCachedTicket()
     {
         using var fixture = new Fixture();

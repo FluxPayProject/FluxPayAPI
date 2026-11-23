@@ -1,3 +1,4 @@
+import {SignalrService} from "../../services/common/signalr.service";
 import {PaymentSubmissionService} from "../../services/state/payment-submission.service";
 import { CopyTextDirective } from '../../directives/copy-text.directive';
 import { TooltipModule } from 'primeng/tooltip';
@@ -105,15 +106,22 @@ export class TransactionsOutletComponent implements OnInit, OnDestroy {
     protected _textService: TextService,
     protected _dateService: DateService,
     private _messageService: MessageService,
-    protected paymentSubmission: PaymentSubmissionService) {}
+    protected paymentSubmission: PaymentSubmissionService,
+    private signalrService: SignalrService) {}
 
-  async ngOnInit() {
+  ngOnInit() {
     if (!this._profileStateService.isAuthenticated) return;
 
-    await this._contactStateService.getContactsAsync();
+    void this._contactStateService.getContactsAsync().catch(() => {
+      this._messageService.add({severity: 'error', summary: 'Error', detail: 'Could not load recipients.'});
+    });
 
     const date = new Date();
-    if (this.transactions$.getValue().length === 0) await this._transactionsStateService.getTransactionsAsync(date, 20);
+    if (this.transactions$.getValue().length === 0) {
+      void this._transactionsStateService.getTransactionsAsync(date, 20).catch(() => {
+        this._messageService.add({severity: 'error', summary: 'Error', detail: 'Could not load transactions.'});
+      });
+    }
 
     this._changeDetectorRef.detectChanges();
 
@@ -133,6 +141,11 @@ export class TransactionsOutletComponent implements OnInit, OnDestroy {
       }),
       takeUntil(this.destroyed$)
     ).subscribe(result => this.searchedTransactions$.next(result.response));
+
+    this.signalrService.reconnected$.pipe(takeUntil(this.destroyed$)).subscribe(() => {
+      const searchText = this.searchText$.getValue();
+      if (searchText.trim()) this.searchText$.next(searchText);
+    });
 
     this.transactionListScrolledToEndNotifier$
       .pipe(debounceTime(400), takeUntil(this.destroyed$))

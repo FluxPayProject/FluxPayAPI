@@ -1,4 +1,5 @@
 import {Injectable} from '@angular/core';
+import {Subject} from "rxjs";
 import * as signalR from "@microsoft/signalr";
 import {SignalRMethodsName} from "../../constants/SignalRMethodNames";
 import {ITransactionDto} from "../../types/interfaces/consumer/ITransactionDto";
@@ -42,6 +43,9 @@ import {ErrorMessageConstants} from "../../constants/ErrorMessageConstants";
 export class SignalrService {
   public connection: signalR.HubConnection | undefined;
   private stateRevision = 0;
+  private readonly reconnected = new Subject<void>();
+  readonly reconnected$ = this.reconnected.asObservable();
+  private readonly reconnectDelays = [0, 2000, 10000, 30000];
 
   constructor(
       private _messageService: MessageService,
@@ -62,7 +66,7 @@ export class SignalrService {
         .configureLogging(signalR.LogLevel.Information)
         .withUrl(`${serverUrl}consumer` + "/notify")
         .withAutomaticReconnect({
-          nextRetryDelayInMilliseconds: context => [0, 2000, 10000, 30000][Math.min(context.previousRetryCount, 3)]
+          nextRetryDelayInMilliseconds: context => this.retryDelay(context.previousRetryCount)
         })
         .build();
   }
@@ -70,10 +74,27 @@ export class SignalrService {
   public async start() {
     if (!this.connection) throw new Error(ErrorMessageConstants.SignalRConnectionIsUndefined);
 
-    await this.connection.start();
+    const connection = this.connection;
+    let failures = 0;
+    while (connection === this.connection && this._profileStateService.isAuthenticated) {
+      try {
+        await connection.start();
+        if (failures > 0) await this.refreshAfterReconnect();
+        return;
+      } catch {
+        const delay = this.retryDelay(failures + 1);
+        failures++;
+        await new Promise<void>(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+
+  private retryDelay(attempt: number) {
+    return this.reconnectDelays[Math.min(attempt, this.reconnectDelays.length - 1)];
   }
 
   public async refreshAfterReconnect() {
+    this.reconnected.next();
     try {
       // Retry if a live event arrived while an older snapshot was loading.
       let revision: number;
@@ -83,7 +104,7 @@ export class SignalrService {
         if (this._transactionStateService.wasRequested) requests.push(this._transactionStateService.refreshTransactionsAsync());
         if (this._creditCardsStateService.wereCardsRequested) requests.push(this._creditCardsStateService.getCreditCardsAsync());
         if (this._supportTicketStateService.wasRequested) requests.push(this._supportTicketStateService.refreshSupportTicketsAsync());
-        if (this._contactsStateService.wasContactsRequested) requests.push(this._contactsStateService.getContactsAsync());
+        if (this._contactsStateService.wasContactsRequested) requests.push(this._contactsStateService.refreshContactsAsync());
         await Promise.all(requests);
       } while (revision !== this.stateRevision);
     } catch {

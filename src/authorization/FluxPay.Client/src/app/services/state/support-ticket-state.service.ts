@@ -27,13 +27,14 @@ export class SupportTicketStateService {
 
   //requests
   public async refreshSupportTicketsAsync() {
+    this.wasRequested = true;
     const version = ++this.snapshotVersion;
     const result = await firstValueFrom(this._ticketsApiService.getSupportTickets(new Date(), 10));
     if (version === this.snapshotVersion) this.supportTickets$.next(result.response);
-    this.wasRequested = true;
   }
 
   public async getSupportTicketsAsync(fromDateTime: Date | string, limit: number, cursorId?: string) {
+    this.wasRequested = true;
     const version = this.snapshotVersion;
     const getSupportTickets$ = this._ticketsApiService.getSupportTickets(fromDateTime, limit, cursorId);
     const getSupportTicketsResult = await firstValueFrom(getSupportTickets$);
@@ -43,7 +44,6 @@ export class SupportTicketStateService {
       const ids = new Set(supportTickets.map(item => item.id));
       this.supportTickets$.next([...supportTickets, ...getSupportTicketsResult.response.filter(item => !ids.has(item.id))]);
     }
-    this.wasRequested = true;
 
     return getSupportTicketsResult;
   }

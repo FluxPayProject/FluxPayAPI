@@ -23,13 +23,14 @@ export class TransactionsStateService {
 
   //requests
   public async refreshTransactionsAsync() {
+    this.wasRequested = true;
     const version = ++this.snapshotVersion;
     const result = await firstValueFrom(this._transactionsApiService.getTransactions(new Date(), 20));
     if (version === this.snapshotVersion) this.transactions$.next(result.response);
-    this.wasRequested = true;
   }
 
   public async getTransactionsAsync(fromDateTime: Date | string, limit: number, cursorId?: string) {
+    this.wasRequested = true;
     const version = this.snapshotVersion;
     const getTransactions$ = this._transactionsApiService.getTransactions(fromDateTime, limit, cursorId);
     const getTransactionsResult = await firstValueFrom(getTransactions$);
@@ -39,7 +40,6 @@ export class TransactionsStateService {
       const ids = new Set(transactions.map(item => item.id));
       this.transactions$.next([...transactions, ...getTransactionsResult.response.filter(item => !ids.has(item.id))]);
     }
-    this.wasRequested = true;
 
     return getTransactionsResult;
   }
