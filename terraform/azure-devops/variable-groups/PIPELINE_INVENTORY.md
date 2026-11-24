@@ -1,6 +1,6 @@
 # Managed pipelines
 
-`pipelines.tf` creates nine pipelines using the `FluxPay` GitHub connection,
+`pipelines.tf` creates ten pipelines using the `FluxPay` GitHub connection,
 repository `FluxPayProject/FluxPayAPI` and hosted `Azure Pipelines` pool.
 
 - PR Validation Auth: `.azdo/pr-validation/pr-validation-auth.yml`
@@ -12,6 +12,7 @@ repository `FluxPayProject/FluxPayAPI` and hosted `Azure Pipelines` pool.
 - Terraform Create: `.azdo/infrastructure/terraform-create.yml`
 - Terraform Destroy: `.azdo/infrastructure/terraform-destroy.yml`
 - Cloudflare DNS: `.azdo/cloudflare/terraform-dns.yml`
+- Deploy FluxPay Dev: `.azdo/infrastructure/deploy-fluxpay-dev.yml`
 
 Terraform manages names, folders, repository connections and default branches.
 YAML owns CI/PR triggers. `pipeline_default_branch` defaults to `refs/heads/main`;
@@ -58,5 +59,4 @@ GitOps commit if a push races with another run.
    release needs to be rolled back, revert its GitOps commit to restore the
    previous chart and image pins together.
 
-Legacy `Configure Platform` is not managed here. Keep it disabled; there is no
-maintained all-in-one deployment entry point yet.
+For a fresh AKS deployment, use [Deploy FluxPay Dev](../../infrastructure/README.md#one-click-deployment).

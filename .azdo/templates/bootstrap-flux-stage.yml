@@ -1,0 +1,34 @@
+stages:
+  - stage: Flux
+    displayName: Bootstrap Flux and wait for ingress
+    dependsOn: Azure
+    variables:
+      - group: FluxPay_Dev_Ansible
+    jobs:
+      - job: Bootstrap
+        variables:
+          aksResourceGroup: $[stageDependencies.Azure.Provision.outputs['Outputs.aksResourceGroup']]
+          aksClusterName: $[stageDependencies.Azure.Provision.outputs['Outputs.aksClusterName']]
+        steps:
+          - checkout: self
+            path: s/fluxpay
+          - checkout: fluxBootstrap
+            path: s/flux-bootstrap
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '3.13'
+
+          - task: AzureCLI@2
+            name: Ingress
+            displayName: Bootstrap Flux and wait for Traefik
+            inputs:
+              azureSubscription: Azure_Connection
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                exec python "$(Pipeline.Workspace)/s/fluxpay/.azdo/infrastructure/bootstrap-flux.py"
+              workingDirectory: $(Pipeline.Workspace)/s/flux-bootstrap
+            env:
+              AKS_RESOURCE_GROUP: $(aksResourceGroup)
+              AKS_CLUSTER_NAME: $(aksClusterName)
+              FLUX_BOOTSTRAP_VARS_BASE64: $(flux-bootstrap-vars-base64)

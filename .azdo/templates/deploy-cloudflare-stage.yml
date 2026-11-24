@@ -1,0 +1,32 @@
+stages:
+  - stage: Cloudflare
+    displayName: Configure Cloudflare DNS
+    dependsOn: Flux
+    variables:
+      - group: Cloudflare_API_Key
+    jobs:
+      - job: ConfigureDns
+        variables:
+          traefikPublicIp: $[stageDependencies.Flux.Bootstrap.outputs['Ingress.publicIp']]
+        steps:
+          - checkout: self
+          - task: TerraformInstaller@1
+            inputs:
+              terraformVersion: $(terraformVersion)
+
+          - bash: |
+              set -euo pipefail
+              terraform init -input=false \
+                -backend-config="storage_account_name=$STATE_ACCOUNT" \
+                -backend-config="container_name=$STATE_CONTAINER" \
+                -backend-config="key=cloudflare-dev.tfstate" \
+                -backend-config="sas_token=$STATE_SAS_TOKEN"
+              terraform apply -input=false -lock-timeout=5m -auto-approve -var="traefik_public_ip=$TRAEFIK_PUBLIC_IP"
+            displayName: Configure Cloudflare DNS
+            workingDirectory: $(Build.SourcesDirectory)/terraform/cloudflare/environments/dev
+            env:
+              STATE_ACCOUNT: $(library-storage-account)
+              STATE_CONTAINER: $(library-storage-container)
+              STATE_SAS_TOKEN: $(library-sas-token)
+              CLOUDFLARE_API_TOKEN: $(cloudflare-api-key)
+              TRAEFIK_PUBLIC_IP: $(traefikPublicIp)

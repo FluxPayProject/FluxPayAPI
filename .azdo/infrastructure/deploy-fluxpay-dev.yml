@@ -1,0 +1,23 @@
+trigger: none
+pr: none
+
+resources:
+  repositories:
+    - repository: fluxBootstrap
+      type: github
+      name: FluxPayProject/fluxcd-operator-install-ansible
+      endpoint: FluxPay
+      ref: refs/heads/main
+
+variables:
+  - group: Terraform_Backend_StateFile_Settings
+  - name: terraformVersion
+    value: '1.16.0'
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  - template: ../templates/deploy-azure-stage.yml
+  - template: ../templates/bootstrap-flux-stage.yml
+  - template: ../templates/deploy-cloudflare-stage.yml

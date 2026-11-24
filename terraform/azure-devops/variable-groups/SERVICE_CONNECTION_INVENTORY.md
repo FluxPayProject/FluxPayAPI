@@ -3,13 +3,13 @@
 `service-connections.tf` creates connections from protected inputs; IDs come
 from Terraform resources, not hard-coded imports.
 
-- `FluxPay`: GitHub PAT authentication, used by all nine managed pipelines.
+- `FluxPay`: GitHub PAT authentication, used by all ten managed pipelines.
 - `Azure_ACR_Connection`: registry credentials for the original ACR build scripts.
   Maintained pipelines publish to Docker Hub.
 - `Docker_Hub_Connection`: Docker Hub username/token, authorized for the three
   Build and three PR Validation pipelines.
-- `Azure_Connection`: Azure service-principal credentials. Maintained infrastructure
-  pipelines currently use the Azure credential variable group instead.
+- `Azure_Connection`: Azure service-principal credentials used by the Flux stage
+  of Deploy FluxPay Dev to retrieve AKS credentials.
 - `SonarCloud_Service_Connection`: optional token authentication, used only by
   Build Auth on `main`. Terraform can manage this connection.
 

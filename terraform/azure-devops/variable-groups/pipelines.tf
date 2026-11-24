@@ -45,6 +45,11 @@ locals {
       folder    = "\\Infrastructure"
       yaml_path = ".azdo/cloudflare/terraform-dns.yml"
     }
+    deploy_fluxpay_dev = {
+      name      = "Deploy FluxPay Dev"
+      folder    = "\\Infrastructure"
+      yaml_path = ".azdo/infrastructure/deploy-fluxpay-dev.yml"
+    }
   }
 
   build_pipelines = toset(["build_auth", "build_consumer", "build_sender"])
@@ -91,6 +96,22 @@ locals {
     cloudflare_dns = {
       variable_group_id = azuredevops_variable_group.cloudflare_api_key.id
       pipeline_key      = "cloudflare_dns"
+    }
+    backend_deploy = {
+      variable_group_id = azuredevops_variable_group.terraform_backend_settings.id
+      pipeline_key      = "deploy_fluxpay_dev"
+    }
+    azure_deploy = {
+      variable_group_id = azuredevops_variable_group.terraform_azure_credentials.id
+      pipeline_key      = "deploy_fluxpay_dev"
+    }
+    ansible_deploy = {
+      variable_group_id = azuredevops_variable_group.fluxpay_dev_ansible.id
+      pipeline_key      = "deploy_fluxpay_dev"
+    }
+    cloudflare_deploy = {
+      variable_group_id = azuredevops_variable_group.cloudflare_api_key.id
+      pipeline_key      = "deploy_fluxpay_dev"
     }
   }
 }
@@ -153,6 +174,13 @@ resource "azuredevops_pipeline_authorization" "docker_hub" {
   resource_id = azuredevops_serviceendpoint_dockerregistry.docker_hub.id
   type        = "endpoint"
   pipeline_id = azuredevops_build_definition.pipeline[each.value].id
+}
+
+resource "azuredevops_pipeline_authorization" "deploy_azure" {
+  project_id  = var.project_id
+  resource_id = azuredevops_serviceendpoint_azurerm.azure.id
+  type        = "endpoint"
+  pipeline_id = azuredevops_build_definition.pipeline["deploy_fluxpay_dev"].id
 }
 
 resource "azuredevops_pipeline_authorization" "sonarcloud" {

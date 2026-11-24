@@ -1,0 +1,39 @@
+stages:
+  - stage: Azure
+    displayName: Provision Azure infrastructure
+    dependsOn: []
+    variables:
+      - group: Terraform_Azure_Credentials
+    jobs:
+      - job: Provision
+        steps:
+          - checkout: self
+          - task: TerraformInstaller@1
+            inputs:
+              terraformVersion: $(terraformVersion)
+
+          - bash: |
+              set -euo pipefail
+              terraform init -input=false \
+                -backend-config="storage_account_name=$STATE_ACCOUNT" \
+                -backend-config="container_name=$STATE_CONTAINER" \
+                -backend-config="key=$STATE_KEY" \
+                -backend-config="sas_token=$STATE_SAS_TOKEN"
+              terraform apply -input=false -lock-timeout=5m -auto-approve
+
+              resource_group=$(terraform output -raw rg_name)
+              cluster_name=$(terraform output -raw aks_name)
+              printf '##vso[task.setvariable variable=aksResourceGroup;isOutput=true]%s\n' "$resource_group"
+              printf '##vso[task.setvariable variable=aksClusterName;isOutput=true]%s\n' "$cluster_name"
+            name: Outputs
+            displayName: Provision Azure infrastructure
+            workingDirectory: $(Build.SourcesDirectory)/terraform/infrastructure/environments/dev
+            env:
+              ARM_CLIENT_ID: $(library-client-id)
+              ARM_CLIENT_SECRET: $(library-client-secret)
+              ARM_TENANT_ID: $(library-tenant-id)
+              ARM_SUBSCRIPTION_ID: $(library-subscription-id)
+              STATE_ACCOUNT: $(library-storage-account)
+              STATE_CONTAINER: $(library-storage-container)
+              STATE_KEY: $(library-state-file)
+              STATE_SAS_TOKEN: $(library-sas-token)
