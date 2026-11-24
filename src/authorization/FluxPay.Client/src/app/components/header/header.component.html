@@ -1,7 +1,10 @@
-<a routerLink="/transactions" class="logo">
-  <svg-icon src="../../../assets/svg/logo.svg" class="logoSvg" />
-  <p class="logoName">FluxPay</p>
-</a>
+<div class="headerBrand">
+  <ng-content />
+  <a routerLink="/transactions" class="logo">
+    <svg-icon src="../../../assets/svg/logo.svg" class="logoSvg" />
+    <p class="logoName">FluxPay</p>
+  </a>
+</div>
 <div class="profile">
   @if (profileName$ | async; as name) {
     <span class="fullName" [title]="name">{{ name }}</span>

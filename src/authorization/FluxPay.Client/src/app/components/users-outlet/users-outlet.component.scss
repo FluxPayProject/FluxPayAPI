@@ -78,7 +78,15 @@
 .userInfoWindowBodyTransactionDate { grid-column: 2 / -1; color: #566170; }
 
 @media (max-width: 540px) {
-  .userInfoWindowHeader { padding: 12px; }
+  .userInfoWindowHeader {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 6px 10px;
+    padding: 12px;
+  }
+  .userInfoWindowHeaderAvatar { grid-row: span 2; width: 42px; }
+  .userInfoWindowHeaderBalance { grid-column: 2; overflow-wrap: anywhere; }
+  .userInfoWindowClose { grid-column: 3; grid-row: 1 / span 2; }
   .userInfoWindowBody { padding: 12px; }
   .userTransaction { grid-template-columns: auto minmax(0, 1fr); }
   .userInfoWindowBodyTransactionTo,

@@ -1,5 +1,6 @@
 import { AvatarComponent } from './components/avatar/avatar.component';
 import { NotificationsComponent } from './components/notifications/notifications.component';
+import { A11yModule } from '@angular/cdk/a11y';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -34,6 +35,7 @@ import { SessionExpirationInterceptor } from './services/common/session-expirati
     BrowserAnimationsModule,
     AngularSvgIconModule.forRoot(),
     FormsModule,
+    A11yModule,
     AvatarComponent,
     NotificationsComponent
   ],

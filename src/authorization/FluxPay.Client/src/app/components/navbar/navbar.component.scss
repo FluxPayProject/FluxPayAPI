@@ -1,5 +1,4 @@
 :host {
-  grid-area: navbar;
   display: flex;
   min-height: 0;
   border-right: 1px solid var(--sidebar-border);
@@ -84,16 +83,8 @@
 }
 
 @media (max-width: 760px) {
-  .navBarContainer { padding-inline: 10px; }
-  .item { justify-content: center; gap: 0; padding-inline: 0; }
-  .itemTitle {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
+  :host { border-right: 0; }
+  .navBarContainer { padding: 10px 12px 16px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

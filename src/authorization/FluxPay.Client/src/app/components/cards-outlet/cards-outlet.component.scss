@@ -241,3 +241,11 @@
   .addCardPanel { padding: 20px 28px 20px 48px; }
   .addCardForm { max-width: 420px; }
 }
+
+@media (max-width: 760px) {
+  :host { height: auto; }
+  .cardsHeading { margin: 24px var(--page-gutter) 0; }
+  .cardsInfo { margin-inline: var(--page-gutter); }
+  .addCardPanel { padding: 20px var(--page-gutter) 24px; }
+  .addCardForm { max-width: none; }
+}

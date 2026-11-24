@@ -5,115 +5,37 @@
   </span>
   <p class="overview">An overview of wallet, user information and transactions</p>
 </header>
-<div class="transactionsInfo">
-  <div class="transactionsInfoContainer">
-    <div class="walletAndUserInfoContainer">
-      <div class="wallet">
-        <p class="walletTitle">Wallet Balance</p>
-        <p class="walletBalance">
-          <ng-container *ngIf="user$ | async as user else userIsNull">
-            €{{user.wallet.balance}}
-          </ng-container>
-          <ng-template #userIsNull>
-            <span class="skeleton skeletonDefault" aria-hidden="true"></span>
-          </ng-template>
-        </p>
-        <div class="logo">
-          <svg-icon src="../../../assets/svg/logo.svg" class="logoSvg" />
-          <p class="logoTitle">FluxPay</p>
-        </div>
-      </div>
-      <div class="userInfo">
-        @if (user$ | async; as user) {
-          @let name = _textService.pullUsernameFromMail(user.email);
-          <app-avatar class="userInfoAvatar" [name]="name" />
-          <div class="userInfoData">
-            <p class="userInfoFullName">{{ name }}</p>
-            <p class="userInfoId" appCopyText="{{user.id}}" copyLabel="Copy user ID" title="{{user.id}}">ID: {{user.id}}</p>
-          </div>
-        } @else {
-          <span class="skeleton userInfoAvatar" aria-hidden="true"></span>
-          <div class="userInfoData">
-            <p class="userInfoFullName"><span class="skeleton skeletonDefault" aria-hidden="true"></span></p>
-            <span class="skeleton skeletonDefault" aria-hidden="true"></span>
-          </div>
-        }
-      </div>
-    </div>
-    <div class="searchTransactions">
-      <input aria-label="Search transactions" type="text" class="searchTransactionsInput"
-             [ngModel]="searchText$ | async" (ngModelChange)="searchText$.next($event)"
-             placeholder="Search Transactions" />
-      <svg-icon src="../../../assets/svg/search.svg" class="searchSvg" />
-    </div>
-    <ng-container *ngIf="{
-      transactions: (transactions$ | async) || [],
-      searchTransactions: (searchedTransactions$ | async) || [],
-      searchText: (searchText$ | async) || ''
-    } as data">
-      <div class="transactionList" tabindex="0" role="region" aria-label="Transaction history" [@transactionsAnimation]=""
-           *ngIf="data.transactions.length > 0 && data.searchText.length === 0 && _transactionsStateService.wasRequested; else searchTransactionTemplate"
-           (scroll)="onScrollTransactionsHandler($event)">
-        <div *ngFor="let transaction of data.transactions; trackBy: identifyTransactionDto"
-             class="transactionItem {{getTransactionColorClassName(transaction)}}">
-          <svg-icon src="../../../assets/svg/transaction.svg" appCopyText="{{transaction.id}}" copyLabel="Copy transaction ID" title="{{transaction.id}}" class="transactionSvg" />
-          <div class="transactionItemInfo">
-            <p class="transactionItemFrom" appCopyText="{{transaction.fromUserId}}" copyLabel="Copy sender ID" title="{{transaction.fromUserId}}">
-              From: {{transaction.fromUserId}}
-            </p>
-            <p class="transactionItemTo" appCopyText="{{transaction.toUserId}}" copyLabel="Copy recipient ID" title="{{transaction.toUserId}}">
-              To: {{transaction.toUserId}}
-            </p>
-            <p class="transactionItemAmount">
-              Amount: €{{transaction.amount}}
-            </p>
-            <p class="transactionItemDate">
-              {{_dateService.getTimeAndDate(transaction.createdAt)}}
-            </p>
-          </div>
-        </div>
-        <div class="transactionListLoaderBackground" [@transactionListLoaderAnimation]="" *ngIf="transactionListLoader">
-          <span class="transactionListLoader"></span>
-        </div>
-      </div>
-      <ng-template #searchTransactionTemplate>
-        <div class="transactionList" tabindex="0" role="region" aria-label="Transaction search results"
-             [@transactionsAnimation]="" (scroll)="onScrollSearchTransactionsHandler($event)"
-             *ngIf="data.searchTransactions.length > 0 && data.searchText.length > 0">
-          <div *ngFor="let transaction of data.searchTransactions; trackBy: identifyTransactionDto"
-               class="transactionItem {{getTransactionColorClassName(transaction)}}">
-            <svg-icon src="../../../assets/svg/transaction.svg" appCopyText="{{transaction.id}}" copyLabel="Copy transaction ID" title="{{transaction.id}}" class="transactionSvg" />
-            <div class="transactionItemInfo">
-              <p class="transactionItemFrom">
-                From: {{transaction.fromUserId}}
-              </p>
-              <p class="transactionItemTo">
-                To: {{transaction.toUserId}}
-              </p>
-              <p class="transactionItemAmount">
-                Amount: €{{transaction.amount}}
-              </p>
-              <p class="transactionItemDate">
-                {{_dateService.getTimeAndDate(transaction.createdAt)}}
-              </p>
-            </div>
-          </div>
-          <div class="transactionListLoaderBackground" [@transactionListLoaderAnimation]="" *ngIf="transactionListLoader">
-            <span class="transactionListLoader"></span>
-          </div>
-        </div>
+<div class="walletAndUserInfoContainer">
+  <div class="wallet">
+    <p class="walletTitle">Wallet Balance</p>
+    <p class="walletBalance">
+      <ng-container *ngIf="user$ | async as user else userIsNull">
+        €{{user.wallet.balance}}
+      </ng-container>
+      <ng-template #userIsNull>
+        <span class="skeleton skeletonDefault" aria-hidden="true"></span>
       </ng-template>
-      <div class="emptyTransactionList" *ngIf="!data.searchText && data.transactions.length === 0 && _transactionsStateService.wasRequested">
-        <p>No transactions yet</p>
-      </div>
-    </ng-container>
-    <div class="transactionList" *ngIf="!_transactionsStateService.wasRequested">
-      <span class="skeleton skeletonTransactionItem" aria-hidden="true"></span>
-      <span class="skeleton skeletonTransactionItem" aria-hidden="true"></span>
-      <span class="skeleton skeletonTransactionItem" aria-hidden="true"></span>
-      <span class="skeleton skeletonTransactionItem" aria-hidden="true"></span>
-      <span class="skeleton skeletonTransactionItem" aria-hidden="true"></span>
+    </p>
+    <div class="logo">
+      <svg-icon src="../../../assets/svg/logo.svg" class="logoSvg" />
+      <p class="logoTitle">FluxPay</p>
     </div>
+  </div>
+  <div class="userInfo">
+    @if (user$ | async; as user) {
+      @let name = _textService.pullUsernameFromMail(user.email);
+      <app-avatar class="userInfoAvatar" [name]="name" />
+      <div class="userInfoData">
+        <p class="userInfoFullName">{{ name }}</p>
+        <p class="userInfoId" appCopyText="{{user.id}}" copyLabel="Copy user ID" title="{{user.id}}">ID: {{user.id}}</p>
+      </div>
+    } @else {
+      <span class="skeleton userInfoAvatar" aria-hidden="true"></span>
+      <div class="userInfoData">
+        <p class="userInfoFullName"><span class="skeleton skeletonDefault" aria-hidden="true"></span></p>
+        <span class="skeleton skeletonDefault" aria-hidden="true"></span>
+      </div>
+    }
   </div>
 </div>
 <aside class="transferPanel" aria-labelledby="transfer-title">
@@ -147,3 +69,79 @@
     }
   </form>
 </aside>
+<div class="transactionActivity">
+  <div class="searchTransactions">
+    <input aria-label="Search transactions" type="text" class="searchTransactionsInput"
+           [ngModel]="searchText$ | async" (ngModelChange)="searchText$.next($event)"
+           placeholder="Search Transactions" />
+    <svg-icon src="../../../assets/svg/search.svg" class="searchSvg" />
+  </div>
+  <ng-container *ngIf="{
+    transactions: (transactions$ | async) || [],
+    searchTransactions: (searchedTransactions$ | async) || [],
+    searchText: (searchText$ | async) || ''
+  } as data">
+    <div class="transactionList" tabindex="0" role="region" aria-label="Transaction history" [@transactionsAnimation]=""
+         *ngIf="data.transactions.length > 0 && data.searchText.length === 0 && _transactionsStateService.wasRequested; else searchTransactionTemplate"
+         (scroll)="onScrollTransactionsHandler($event)">
+      <div *ngFor="let transaction of data.transactions; trackBy: identifyTransactionDto"
+           class="transactionItem {{getTransactionColorClassName(transaction)}}">
+        <svg-icon src="../../../assets/svg/transaction.svg" appCopyText="{{transaction.id}}" copyLabel="Copy transaction ID" title="{{transaction.id}}" class="transactionSvg" />
+        <div class="transactionItemInfo">
+          <p class="transactionItemFrom" appCopyText="{{transaction.fromUserId}}" copyLabel="Copy sender ID" title="{{transaction.fromUserId}}">
+            From: {{transaction.fromUserId}}
+          </p>
+          <p class="transactionItemTo" appCopyText="{{transaction.toUserId}}" copyLabel="Copy recipient ID" title="{{transaction.toUserId}}">
+            To: {{transaction.toUserId}}
+          </p>
+          <p class="transactionItemAmount">
+            Amount: €{{transaction.amount}}
+          </p>
+          <p class="transactionItemDate">
+            {{_dateService.getTimeAndDate(transaction.createdAt)}}
+          </p>
+        </div>
+      </div>
+      <div class="transactionListLoaderBackground" [@transactionListLoaderAnimation]="" *ngIf="transactionListLoader">
+        <span class="transactionListLoader"></span>
+      </div>
+    </div>
+    <ng-template #searchTransactionTemplate>
+      <div class="transactionList" tabindex="0" role="region" aria-label="Transaction search results"
+           [@transactionsAnimation]="" (scroll)="onScrollSearchTransactionsHandler($event)"
+           *ngIf="data.searchTransactions.length > 0 && data.searchText.length > 0">
+        <div *ngFor="let transaction of data.searchTransactions; trackBy: identifyTransactionDto"
+             class="transactionItem {{getTransactionColorClassName(transaction)}}">
+          <svg-icon src="../../../assets/svg/transaction.svg" appCopyText="{{transaction.id}}" copyLabel="Copy transaction ID" title="{{transaction.id}}" class="transactionSvg" />
+          <div class="transactionItemInfo">
+            <p class="transactionItemFrom">
+              From: {{transaction.fromUserId}}
+            </p>
+            <p class="transactionItemTo">
+              To: {{transaction.toUserId}}
+            </p>
+            <p class="transactionItemAmount">
+              Amount: €{{transaction.amount}}
+            </p>
+            <p class="transactionItemDate">
+              {{_dateService.getTimeAndDate(transaction.createdAt)}}
+            </p>
+          </div>
+        </div>
+        <div class="transactionListLoaderBackground" [@transactionListLoaderAnimation]="" *ngIf="transactionListLoader">
+          <span class="transactionListLoader"></span>
+        </div>
+      </div>
+    </ng-template>
+    <div class="emptyTransactionList" *ngIf="!data.searchText && data.transactions.length === 0 && _transactionsStateService.wasRequested">
+      <p>No transactions yet</p>
+    </div>
+  </ng-container>
+  <div class="transactionList" *ngIf="!_transactionsStateService.wasRequested">
+    <span class="skeleton skeletonTransactionItem" aria-hidden="true"></span>
+    <span class="skeleton skeletonTransactionItem" aria-hidden="true"></span>
+    <span class="skeleton skeletonTransactionItem" aria-hidden="true"></span>
+    <span class="skeleton skeletonTransactionItem" aria-hidden="true"></span>
+    <span class="skeleton skeletonTransactionItem" aria-hidden="true"></span>
+  </div>
+</div>
