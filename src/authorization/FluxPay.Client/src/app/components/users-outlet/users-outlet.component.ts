@@ -1,10 +1,12 @@
+import { AvatarComponent } from '../avatar/avatar.component';
+import { NotificationService } from '../../services/common/notification.service';
 import { CdkMenuModule } from '@angular/cdk/menu';
 import { CopyTextDirective } from '../../directives/copy-text.directive';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import {A11yModule} from '@angular/cdk/a11y';
-import {Component, ElementRef, HostListener, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, HostListener, OnInit, signal, ViewChild} from '@angular/core';
 import {animate, query, stagger, style, transition, trigger} from "@angular/animations";
 import {UsersStateService} from "../../services/state/users-state.service";
 import {BehaviorSubject, debounceTime, filter, firstValueFrom, Subject} from "rxjs";
@@ -21,7 +23,7 @@ import {ErrorMessageConstants} from "../../constants/ErrorMessageConstants";
 
 @Component({
   standalone: true,
-  imports: [CdkMenuModule, CommonModule, FormsModule, AngularSvgIconModule, CopyTextDirective, A11yModule],
+  imports: [AvatarComponent, CdkMenuModule, CommonModule, FormsModule, AngularSvgIconModule, CopyTextDirective, A11yModule],
   selector: 'app-users-outlet',
   templateUrl: './users-outlet.component.html',
   styleUrls: ['./users-outlet.component.scss'],
@@ -61,9 +63,11 @@ export class UsersOutletComponent implements OnInit {
   public showUserInfoWindow = false;
   //types
   public UserStatus = UserStatus;
+  protected readonly changingStatus = signal<ReadonlySet<string>>(new Set());
 
   constructor(
       private _usersApiService: UsersApiService,
+      private notifications: NotificationService,
       protected _usersStateService: UsersStateService,
       protected _transactionsApiService: TransactionsApiService,
       protected _profileStateService: ProfileStateService,
@@ -104,15 +108,20 @@ export class UsersOutletComponent implements OnInit {
   }
 
   //events
-  public async onChangeSuspendOrMakeActiveHandler(user: IUserDto) {
-    if (user.userStatus.toString() === UserStatus.Suspended.toString()) {
-      const suspendUser$ = this._usersApiService.suspend(user.id);
-      await firstValueFrom(suspendUser$);
-      return;
+  protected async setUserStatus(user: IUserDto, status: UserStatus) {
+    if (user.userStatus === status || this.changingStatus().has(user.id)) return;
+    this.changingStatus.update(ids => new Set(ids).add(user.id));
+    try {
+      const request = status === UserStatus.Suspended
+        ? this._usersApiService.suspend(user.id)
+        : this._usersApiService.notSuspend(user.id);
+      await firstValueFrom(request);
+      user.userStatus = status;
+    } catch {
+      this.notifications.add({severity: 'error', summary: 'Error', detail: 'Could not change the user status.'});
+    } finally {
+      this.changingStatus.update(ids => new Set([...ids].filter(id => id !== user.id)));
     }
-
-    const notSuspendUser$ = this._usersApiService.notSuspend(user.id);
-    await firstValueFrom(notSuspendUser$);
   }
 
   public async onClickGetUserTransactionsInfoHandler(userId: string) {
@@ -161,9 +170,5 @@ export class UsersOutletComponent implements OnInit {
     return 'userInfoWindowBodyTransactionFromMe'
   }
 
-  //other
-  identifyUserDto(index: number, item: IUserDto){
-    return item.id;
-  }
 
 }

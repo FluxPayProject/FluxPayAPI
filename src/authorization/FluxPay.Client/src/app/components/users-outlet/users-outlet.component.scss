@@ -1,699 +1,211 @@
 @use "../../app.component.scss" as *;
 
-:host {
-  display: grid;
-  grid-template-areas:
-    "maininfo rightbar";
-  grid-template-columns: auto 446px;
-  width: 100%;
-  height: 100%;
-}
-
-.usersInfo {
-  width: 100%;
-  height: 100%;
-  flex-shrink: 0;
-  grid-area: maininfo;
-}
-
 .userInfoWindowBackground {
-  position: absolute;
-  display: flex;
-  width: 100%;
-  height: 100%;
-  left: 0;
-  top: 0;
-  background-color: rgba(0, 0, 0, 0.29);
+  position: fixed;
+  inset: 0;
   z-index: 3;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(25 16 38 / 42%);
+}
+
+.userInfoWindow {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 800px);
+  max-height: min(80vh, 620px);
+  min-width: 0;
+  border: 1px solid #e2e5ea;
+  border-radius: 16px;
+  background: white;
+  color: #20242c;
+}
+
+.userInfoWindowHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #ede4f4;
+}
+
+.userInfoWindowHeaderAvatar { flex: 0 0 42px; height: 42px; }
+.userInfoWindowHeaderUsername { flex: 1; overflow-wrap: anywhere; font-size: 18px; font-weight: 700; }
+.userInfoWindowHeaderBalance { font-size: 17px; font-weight: 700; }
+
+.userInfoWindowClose {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: #f4edf8;
+  color: #602181;
+  font-size: 24px;
   cursor: pointer;
 
-  .userInfoWindow {
-    display: flex;
-    flex-direction: column;
-    width: 1400px;
-    height: 800px;
-    margin: auto;
-    background-color: $grey;
-    border-radius: 15px;
-    cursor: auto;
-
-    .userInfoWindowHeader {
-      position: relative;
-      display: flex;
-      background-color: white;
-      width: 100%;
-      height: 80px;
-      border-radius: 15px 15px 0 0;
-
-      .userInfoWindowHeaderAvatar {
-        position: relative;
-        width: 55px;
-        height: 55px;
-        left: 10px;
-        top: 13px;
-        background-color: $purple;
-        border-radius: 100%;
-      }
-
-      .userInfoWindowHeaderUsername {
-        font-size: 23px;
-        margin-top: 28px;
-        margin-left: 20px;
-      }
-
-      .userInfoWindowClose {
-        position: absolute;
-        right: 12px;
-        top: 10px;
-        border: 0;
-        background: transparent;
-        color: #222;
-        font-size: 28px;
-        cursor: pointer;
-        &:focus-visible { outline: 2px solid $purple; }
-      }
-
-      .userInfoWindowHeaderBalance {
-        position: absolute;
-        font-size: 23px;
-        top: 30px;
-        right: 60px;
-      }
-    }
-
-    .userInfoWindowBody {
-      display: flex;
-      flex-direction: column;
-      width: calc(100% - 30px);
-      height: calc(100% - 100px);
-      overflow-y: auto;
-      margin: auto;
-
-      .userInfoWindowBodyLoader {
-        width: 20px;
-        height: 20px;
-        margin: auto;
-        border: 5px solid $purple;
-        border-bottom-color: transparent;
-        border-radius: 50%;
-        display: inline-block;
-        box-sizing: border-box;
-        animation: rotation 1s linear infinite;
-
-        @keyframes rotation {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-      }
-
-      .userInfoWindowBodyTransactionFromMe {
-        display: flex;
-        flex-shrink: 0;
-        width: 100%;
-        height: 65px;
-        background-color: $green-60percent;
-        border-radius: 10px;
-        margin-bottom: 10px;
-
-        .transactionSvgContainer {
-          display: flex;
-
-          .transactionSvg {
-            width: 30px;
-            height: 30px;
-            margin-top: 17px;
-            margin-left: 20px;
-            cursor: pointer;
-
-            path {
-              stroke: white
-            }
-          }
-        }
-
-        p {
-          display: inline-block;
-          margin: 20px auto 0;
-          font-weight: 700;
-          font-size: 20px;
-          color: white;
-        }
-
-        p:nth-child(2){
-          margin-left: 50px;
-        }
-
-        p:last-child{
-          margin-right: 40px;
-        }
-
-        .userInfoWindowBodyTransactionFrom, .userInfoWindowBodyTransactionTo {
-          width: 200px;
-          user-select: none;
-          text-overflow: ellipsis;
-          overflow: hidden;
-          white-space: nowrap;
-          cursor: pointer;
-        }
-      }
-      .userInfoWindowBodyTransactionToMe {
-        display: flex;
-        flex-shrink: 0;
-        width: 100%;
-        height: 65px;
-        background-color: $purple-60percent;
-        border-radius: 10px;
-        margin-bottom: 10px;
-        font-weight: 700;
-        font-size: 20px;
-
-        .transactionSvgContainer {
-          display: flex;
-
-          .transactionSvg {
-            width: 30px;
-            height: 30px;
-            margin-top: 17px;
-            margin-left: 20px;
-            cursor: pointer;
-
-            path {
-              stroke: white
-            }
-          }
-        }
-
-        p {
-          display: inline-block;
-          margin: 20px auto 0;
-          font-weight: 700;
-          font-size: 20px;
-          color: white;
-        }
-
-        p:nth-child(2){
-          margin-left: 50px;
-        }
-
-        p:last-child{
-          margin-right: 40px;
-        }
-
-        .userInfoWindowBodyTransactionFrom, .userInfoWindowBodyTransactionTo {
-          width: 200px;
-          user-select: none;
-          text-overflow: ellipsis;
-          overflow: hidden;
-          white-space: nowrap;
-          cursor: pointer;
-        }
-      }
-      .userInfoWindowBodyTransactionRolledBack {
-        display: flex;
-        flex-shrink: 0;
-        width: 100%;
-        height: 65px;
-        background-color: $red-60percent;
-        border-radius: 10px;
-        margin-bottom: 10px;
-        font-weight: 700;
-        font-size: 20px;
-
-        .transactionSvgContainer {
-          display: flex;
-
-          .transactionSvg {
-            width: 30px;
-            height: 30px;
-            margin-top: 17px;
-            margin-left: 20px;
-            cursor: pointer;
-
-            path {
-              stroke: white
-            }
-          }
-        }
-
-        p {
-          display: inline-block;
-          margin: 20px auto 0;
-          font-weight: 700;
-          font-size: 20px;
-          color: white;
-        }
-
-        p:nth-child(2){
-          margin-left: 50px;
-        }
-
-        p:last-child{
-          margin-right: 40px;
-        }
-
-        .userInfoWindowBodyTransactionFrom, .userInfoWindowBodyTransactionTo {
-          width: 200px;
-          user-select: none;
-          text-overflow: ellipsis;
-          overflow: hidden;
-          white-space: nowrap;
-          cursor: pointer;
-        }
-      }
-    }
-  }
+  &:hover { background: #ecdef4; }
+  &:focus-visible { outline: 2px solid $purple; }
 }
 
-.usersInfoContainer {
-  margin-top: 54px;
-  margin-left: 48px;
-  margin-right: 48px;
+.userInfoWindowBody {
+  display: grid;
+  gap: 10px;
+  overflow: auto;
+  padding: 16px 20px;
 }
 
-.titleSpan {
+.userTransaction {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 8px 12px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 9px;
+  background: #f5effa;
+  color: #432255;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+
+  &.userInfoWindowBodyTransactionToMe { background: #eef8f2; color: #206146; }
+  &.userInfoWindowBodyTransactionRolledBack { background: #fdf1f2; color: #94283b; }
+  [appCopyText] { cursor: pointer; }
+}
+
+.transactionSvg { display: block; width: 22px; height: 22px; }
+.userInfoWindowBodyTransactionAmount { font-weight: 700; }
+.userInfoWindowBodyTransactionDate { grid-column: 2 / -1; color: #566170; }
+
+@media (max-width: 540px) {
+  .userInfoWindowHeader { padding: 12px; }
+  .userInfoWindowBody { padding: 12px; }
+  .userTransaction { grid-template-columns: auto minmax(0, 1fr); }
+  .userInfoWindowBodyTransactionTo,
+  .userInfoWindowBodyTransactionAmount { grid-column: 2; }
+}
+
+.usersPage {
+  display: grid;
+  gap: 20px;
+  width: min(100%, 940px);
+  padding: 32px clamp(16px, 3vw, 48px);
+  color: #20242c;
+
+  h1 { font-size: 30px; font-weight: 700; }
+}
+
+.userSearch {
   display: flex;
-}
-
-.title {
-  font-weight: 700;
-  font-size: 40px;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  margin-bottom: 12px;
-}
-
-.titleUsersSvg {
-  width: 35px;
-  height: 35px;
-  margin-top: 2px;
-  margin-left: 10px;
-
-  path {
-    stroke: black;
-  }
-}
-
-.overview {
-  color: $grey-p;
-  font-weight: 700;
-  font-size: 16px;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  margin-bottom: 30px;
-}
-
-.search {
-  position: relative;
-  width: 100%;
-  height: 72px;
-  margin-bottom: 20px;
-
-  .searchInput {
-    width: 100%;
-    height: 100%;
-    outline: none;
-    border: none;
-    color: $grey-p;
-    font-weight: 700;
-    font-size: 20px;
-    text-indent: 35px;
-    border-radius: 10px;
-
-    &::placeholder {
-      color: $light-grey-p;
-    }
-  }
-
-  .searchSvg {
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    top: 19px;
-    right: 19px;
-    stroke: $light-grey-svg;
-  }
-}
-
-.userList {
-  width: 100%;
-}
-
-.userItem {
-  display: flex;
-  justify-content: space-between;
-  height: 72px;
-  background-color: white;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1px solid #cbd2dc;
   border-radius: 10px;
-  padding: 16px 32px;
+  background: white;
+
+  &:focus-within { outline: 2px solid $purple; outline-offset: -2px; }
+  svg-icon { flex: 0 0 20px; height: 20px; stroke: #687382; }
+  input { flex: 1; min-width: 0; height: 46px; padding: 0; border: 0; outline: 0; font-size: 16px; }
+}
+
+.usersDirectory {
+  padding: 0 16px;
+  border: 1px solid #e2e5ea;
+  border-radius: 14px;
+  background: white;
+}
+
+.directoryList { margin: 0; padding: 0; }
+
+.directoryRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-height: 73px;
+  padding: 12px 0;
+
+  & + & { border-top: 1px solid #edf0f3; }
+}
+
+.directoryAvatar { flex: 0 0 40px; height: 40px; font-size: 16px; }
+.directoryIdentity { flex: 1; min-width: 90px; }
+.directoryIdentity p, .directoryBalance span, .usersEmpty { color: #566170; font-size: 14px; }
+.directoryBalance { display: grid; gap: 4px; min-width: 70px; }
+.directoryBalance strong { font-size: 16px; font-weight: 700; }
+
+.directoryName {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #602181;
+  text-align: left;
+  font-size: 16px;
   font-weight: 700;
-  font-size: 20px;
-  margin-bottom: 20px;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+
+  &:hover { text-decoration: underline; }
+}
+
+.userStatusTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 36px;
+  min-width: 111px;
+  padding: 0 10px;
+  border: 1px solid #cee7dc;
+  border-radius: 8px;
+  background: #eef8f2;
+  color: #206146;
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
 
-  .userItemUsername {
+  &:hover:enabled { background: #dff2e7; }
+  &:disabled { opacity: .65; cursor: wait; }
+  &:focus-visible { outline: 2px solid $purple; outline-offset: 2px; }
+  &.suspended { border-color: #efcdcf; background: #fdf1f2; color: #94283b; }
+  &.suspended:hover:enabled { background: #f9e3e6; }
+
+  span {
+    width: 7px;
+    height: 7px;
+    border: solid currentColor;
+    border-width: 0 1.5px 1.5px 0;
+    transform: translateY(-2px) rotate(45deg);
+  }
+}
+
+.userStatusMenu {
+  display: grid;
+  gap: 4px;
+  min-width: 135px;
+  margin-top: 4px;
+  padding: 5px;
+  border: 1px solid #e2e5ea;
+  border-radius: 9px;
+  background: white;
+  box-shadow: 0 5px 16px rgb(32 18 48 / 12%);
+
+  button {
+    min-height: 36px;
+    padding: 0 9px;
     border: 0;
-    padding: 0;
-    background: transparent;
-    color: inherit;
-    font: inherit;
+    border-radius: 6px;
+    background: white;
+    color: #20242c;
+    font-size: 14px;
     text-align: left;
     cursor: pointer;
-    &:focus-visible { outline: 2px solid $purple; outline-offset: 2px; }
-    max-width: 250px;
-    margin: 12px auto 0 0;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
 
-  .userItemBalance {
-    margin: 12px auto 0;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
-
-  .userItemRole {
-    margin: 12px auto 0;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
-
-  .userItemStatus {
-    margin: 12px 0 0 auto;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
-
-  .userItemStatusSelect {
-    margin: 0 0 0 10px;
-    width: 150px;
-    height: 40px;
-    border: none;
-    outline: none;
-    font-weight: 700;
-    font-size: 20px;
-    text-align: center;
-    background-color: $purple;
-    color: white;
-    border-radius: 10px;
+    &:hover, &[aria-checked='true'] { background: #f7effc; }
+    &:focus-visible { outline: 1px solid $purple; outline-offset: -1px; }
   }
 }
 
-.emptyBlock {
-  display: flex;
-  width: 100%;
-  height: 100%;
-  background-color: white;
-  grid-area: rightbar;
-}
-
-@media screen and (max-width: 1880px) {
-  :host {
-    grid-template-columns: auto 380px;
-  }
-
-  .usersInfoContainer {
-    margin-top: 30px;
-  }
-
-  .title {
-    font-size: 35px;
-  }
-
-  .titleUsersSvg {
-    width: 27px;
-    height: 27px;
-  }
-
-  .search {
-    height: 55px;
-    margin-bottom: 15px;
-
-    .searchInput {
-      font-size: 18px;
-    }
-
-    .searchSvg {
-      width: 25px;
-      height: 25px;
-      top: 15px;
-      right: 15px;
-    }
-  }
-
-  .userItem {
-    height: 60px;
-    padding: 10px 32px;
-    font-size: 18px;
-    margin-bottom: 10px;
-
-    .userItemStatusSelect {
-      width: 130px;
-      height: 20px;
-      font-size: 16px;
-      border-radius: 7px;
-    }
-  }
-
-  .userInfoWindowBackground {
-    .userInfoWindow {
-      width: 1000px;
-      height: 600px;
-
-      .userInfoWindowHeader {
-        height: 60px;
-
-        .userInfoWindowHeaderAvatar {
-          width: 35px;
-          height: 35px;
-        }
-
-        .userInfoWindowHeaderUsername {
-          font-size: 17px;
-          margin-top: 22px;
-        }
-
-        .userInfoWindowHeaderBalance {
-          font-size: 17px;
-          top: 22px;
-        }
-      }
-
-      .userInfoWindowBody {
-        .userInfoWindowBodyTransactionFromMe {
-          height: 55px;
-          border-radius: 8px;
-
-          .transactionSvgContainer {
-            .transactionSvg {
-              width: 25px;
-              height: 25px;
-              margin-top: 15px;
-            }
-          }
-
-          p {
-            font-size: 18px;
-          }
-        }
-        .userInfoWindowBodyTransactionToMe {
-          height: 55px;
-          border-radius: 8px;
-
-          .transactionSvgContainer {
-            .transactionSvg {
-              width: 25px;
-              height: 25px;
-              margin-top: 15px;
-            }
-          }
-
-          p {
-            font-size: 18px;
-          }
-        }
-        .userInfoWindowBodyTransactionRolledBack {
-          height: 55px;
-          border-radius: 8px;
-
-          .transactionSvgContainer {
-            .transactionSvg {
-              width: 25px;
-              height: 25px;
-              margin-top: 15px;
-            }
-          }
-
-          p {
-            font-size: 18px;
-          }
-        }
-      }
-    }
-  }
-}
-
-@media screen and (max-width: 1670px) {
-  :host {
-    grid-template-columns: auto 300px;
-  }
-
-  .usersInfoContainer {
-    margin-top: 30px;
-  }
-
-  .title {
-    font-size: 26px;
-    margin-bottom: 8px;
-  }
-
-  .titleUsersSvg {
-    width: 20px;
-    height: 20px;
-  }
-
-  .overview {
-    font-size: 14px;
-    margin-bottom: 20px;
-  }
-
-  .search {
-    height: 40px;
-    margin-bottom: 10px;
-
-    .searchInput {
-      font-size: 14px;
-      text-indent: 20px;
-    }
-
-    .searchSvg {
-      width: 20px;
-      height: 20px;
-      top: 10px;
-      right: 10px;
-    }
-  }
-
-  .userItem {
-    height: 45px;
-    padding: 5px 20px;
-    font-size: 14px;
-    margin-bottom: 10px;
-
-    .userItemStatusSelect {
-      width: 120px;
-      height: 20px;
-      font-size: 14px;
-      border-radius: 7px;
-    }
-  }
-
-  .userInfoWindowBackground {
-    .userInfoWindow {
-      width: 900px;
-      height: 550px;
-
-      .userInfoWindowHeader {
-        height: 50px;
-
-        .userInfoWindowHeaderAvatar {
-          width: 30px;
-          height: 30px;
-          top: 10px;
-        }
-
-        .userInfoWindowHeaderUsername {
-          font-size: 14px;
-          margin-top: 18px;
-        }
-
-        .userInfoWindowHeaderBalance {
-          font-size: 14px;
-          top: 18px;
-        }
-      }
-
-      .userInfoWindowBody {
-        .userInfoWindowBodyTransactionFromMe {
-          height: 45px;
-          border-radius: 8px;
-
-          .transactionSvgContainer {
-            .transactionSvg {
-              width: 20px;
-              height: 20px;
-              margin-top: 13px;
-            }
-          }
-
-          p {
-            font-size: 14px;
-            margin: 15px auto 0;
-          }
-        }
-        .userInfoWindowBodyTransactionToMe {
-          height: 45px;
-          border-radius: 8px;
-
-          .transactionSvgContainer {
-            .transactionSvg {
-              width: 20px;
-              height: 20px;
-              margin-top: 13px;
-            }
-          }
-
-          p {
-            font-size: 14px;
-            margin: 15px auto 0;
-          }
-        }
-        .userInfoWindowBodyTransactionRolledBack {
-          height: 45px;
-          border-radius: 8px;
-
-          .transactionSvgContainer {
-            .transactionSvg {
-              width: 20px;
-              height: 20px;
-              margin-top: 13px;
-            }
-          }
-
-          p {
-            font-size: 14px;
-            margin: 15px auto 0;
-          }
-        }
-      }
-    }
-  }
-
-  ::ng-deep {
-    .skeletonUserItem {
-      width: 100% !important;
-      height: 40px !important;
-      border-radius: 7px !important;
-      padding: 27px !important;
-      margin-bottom: 10px !important;
-    }
-  }
-}
+.usersEmpty { padding: 18px 0; }
+.userPlaceholder { min-height: 60px; margin: 12px 0; border-radius: 8px; }

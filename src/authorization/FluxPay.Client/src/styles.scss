@@ -120,30 +120,6 @@ body {
   padding: 13px !important;
 }
 
-.skeletonSupportTicketItem {
-  width: 100% !important;
-  height: 80px !important;
-  border-radius: 10px !important;
-  padding: 27px !important;
-  margin-bottom: 10px !important;
-}
-
-.skeletonTicketItem {
-  width: 100% !important;
-  height: 80px !important;
-  border-radius: 10px !important;
-  padding: 27px !important;
-  margin-bottom: 10px !important;
-}
-
-.skeletonUserItem {
-  width: 100% !important;
-  height: 60px !important;
-  border-radius: 10px !important;
-  padding: 27px !important;
-  margin-bottom: 10px !important;
-}
-
 .skeletonNavLink {
   width: 90% !important;
   height: 50px !important;
@@ -197,3 +173,19 @@ app-cards-outlet .addCardTitle svg path {
     color: white;
   }
 }
+
+app-navbar .itemIcon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+app-navbar .transactionSvg path,
+app-navbar .contactsSvg path,
+app-navbar .ticketSvg path,
+app-navbar .usersSvg path { stroke: currentColor; }
+
+app-navbar .cardSvg path,
+app-navbar .depositSvg path,
+app-navbar .supportSvg path,
+app-navbar .logoutSvg path { fill: currentColor; }

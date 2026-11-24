@@ -7,16 +7,18 @@
 }
 
 .layoutContainer {
+  --sidebar-width: 328px;
+  --sidebar-surface: #261735;
+  --sidebar-border: #3e2b50;
+  --header-height: 80px;
   display: grid;
-  grid-template-areas:
-    "header header header"
-    "navbar main main";
-  grid-template-rows: 80px auto;
-  grid-template-columns: 328px auto;
+  grid-template-areas: "header header" "navbar main";
+  grid-template-rows: var(--header-height) minmax(0, 1fr);
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
   width: 100%;
   height: 100vh;
   z-index: 2;
-  background-color: white;
+  background: $grey;
 }
 
 .authenticationError {
@@ -59,14 +61,16 @@
 }
 
 @media screen and (max-width: 1880px) {
-  .layoutContainer {
-    grid-template-columns: 300px auto;
-  }
+  .layoutContainer { --sidebar-width: 300px; }
 }
 
 @media screen and (max-width: 1670px) {
   .layoutContainer {
-    grid-template-rows: 60px auto;
-    grid-template-columns: 240px auto;
+    --sidebar-width: 240px;
+    --header-height: 60px;
   }
+}
+
+@media screen and (max-width: 760px) {
+  .layoutContainer { --sidebar-width: 72px; }
 }

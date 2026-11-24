@@ -1,53 +1,56 @@
-<div class="ticketsInfo">
-  <div class="ticketsInfoContainer">
-    <span class="titleSpan">
-      <p class="title">Tickets</p>
-      <svg-icon src="../../../assets/svg/ticket.svg" class="titleTicketsSvg" />
-    </span>
-    <p class="overview">An overview of tickets</p>
-    <ng-container *ngIf="tickets$ | async as tickets">
-      <div class="ticketList" *ngIf="tickets.length > 0" [@ticketListAnimation]="">
-        <div class="ticketItem" *ngFor="let ticket of tickets; trackBy: identifyTicketDto" [@ticketItemAnimation]="">
-          <p class="ticketItemTransactionId">
-            Transaction Id: {{ticket.transactionId}}
-          </p>
-          <p class="ticketItemStatus">
-            <span>Status: {{ticket.ticketStatus == 1 ? "Open" : "Resolved"}}</span>
-          </p>
-          <p class="ticketItemDescriptionTitle">
-            Description
-          </p>
-          <p class="ticketItemDescriptionText">
-            {{ticket.ticketReason}}
-          </p>
-          <p class="ticketItemResponseToUser">
-            Response to user
-          </p>
-          <textarea aria-label="Ticket response" class="ticketItemResponseToUserTextarea" placeholder="Write Response" (keydown.enter)="$event.preventDefault()"
-                    [(ngModel)]="ticket.ticketJustification" (keyup.enter)="onClickResolveTicketHandler(ticket.id, ticket.ticketJustification)">
-          </textarea>
-          <div class="ticketItemButtonContainer">
-            <button class="ticketItemRollBackButton"
-                    [disabled]="pendingRollbacks().has(ticket.transactionId) || rollbackRequests().has(ticket.transactionId)"
-                    (click)="onClickRollBackHandler(ticket.transactionId)">
-              {{rollbackRequests().has(ticket.transactionId) ? "Rollback requested" : "Roll Back"}}
-            </button>
-            <button class="ticketItemOkButton" [disabled]="resolvingTickets().has(ticket.id)" (click)="onClickResolveTicketHandler(ticket.id, ticket.ticketJustification)">
-              Ok
-            </button>
-          </div>
+<div class="ticketPage">
+  <h1>Tickets</h1>
+  <section class="ticketList" aria-label="Support tickets">
+    @if (tickets$ | async; as tickets) {
+      @if (tickets.length) {
+        <div class="ticketList" [@ticketListAnimation]="">
+          @for (ticket of tickets; track ticket.id) {
+            <article class="ticketItem" [@ticketItemAnimation]="">
+              <div class="ticketHeader">
+                <p class="ticketReference"><span>Transaction ID</span>{{ticket.transactionId}}</p>
+                <p class="ticketStatus" [class.resolved]="ticket.ticketStatus !== 1">{{ticket.ticketStatus === 1 ? 'Open' : 'Resolved'}}</p>
+              </div>
+              <div class="ticketDetail">
+                <h3>Description</h3>
+                <p>{{ticket.ticketReason}}</p>
+              </div>
+              @if (ticket.ticketStatus === 1) {
+                <form class="ticketField" (ngSubmit)="onClickResolveTicketHandler(ticket.id, ticket.ticketJustification)">
+                  <label [for]="'reply-' + ticket.id">Response to user</label>
+                  <textarea [id]="'reply-' + ticket.id" name="reply" placeholder="Write a response" [(ngModel)]="ticket.ticketJustification"></textarea>
+                  <div class="ticketActions">
+                    <button class="ticketButton secondary" type="button"
+                            [disabled]="pendingRollbacks().has(ticket.transactionId) || rollbackRequests().has(ticket.transactionId)"
+                            (click)="onClickRollBackHandler(ticket.transactionId)">
+                      {{rollbackRequests().has(ticket.transactionId) ? 'Rollback requested' : 'Roll back transaction'}}
+                    </button>
+                    <button class="ticketButton" type="submit" [disabled]="resolvingTickets().has(ticket.id)">Resolve ticket</button>
+                  </div>
+                </form>
+              } @else {
+                @if (ticket.ticketJustification) {
+                  <div class="ticketDetail ticketResponse"><h3>Response</h3><p>{{ticket.ticketJustification}}</p></div>
+                }
+                <div class="ticketActions">
+                  <button class="ticketButton secondary" type="button"
+                          [disabled]="pendingRollbacks().has(ticket.transactionId) || rollbackRequests().has(ticket.transactionId)"
+                          (click)="onClickRollBackHandler(ticket.transactionId)">
+                    {{rollbackRequests().has(ticket.transactionId) ? 'Rollback requested' : 'Roll back transaction'}}
+                  </button>
+                </div>
+              }
+            </article>
+          }
         </div>
-        <div class="ticketListLoaderBackground" [@ticketListLoaderAnimation]="" *ngIf="ticketListLoaderAnimation">
-          <span class="ticketListLoader"></span>
-        </div>
-      </div>
-    </ng-container>
-    <div class="ticketList" *ngIf="!_ticketStateService.wasRequested">
-      <span class="skeleton skeletonTicketItem" aria-hidden="true"></span>
-      <span class="skeleton skeletonTicketItem" aria-hidden="true"></span>
-      <span class="skeleton skeletonTicketItem" aria-hidden="true"></span>
-      <span class="skeleton skeletonTicketItem" aria-hidden="true"></span>
-    </div>
-  </div>
+      } @else if (_ticketStateService.wasRequested) {
+        <p class="listStatus">No support tickets yet.</p>
+      }
+    }
+    @if (!_ticketStateService.wasRequested) {
+      <span class="skeleton ticketLoading" aria-hidden="true"></span>
+    }
+    @if (ticketListLoaderAnimation) {
+      <p class="listStatus" role="status" [@ticketListLoaderAnimation]="">Loading more tickets…</p>
+    }
+  </section>
 </div>
-<div class="emptyBlock"></div>

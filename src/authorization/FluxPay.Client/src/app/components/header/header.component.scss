@@ -7,6 +7,9 @@
   gap: 16px;
   padding-inline: 35px;
   grid-area: header;
+  background:
+    linear-gradient(90deg, var(--sidebar-border) var(--sidebar-width), #ede4f4 var(--sidebar-width)) bottom / 100% 1px no-repeat,
+    linear-gradient(90deg, var(--sidebar-surface) var(--sidebar-width), #fcfaff var(--sidebar-width));
 }
 
 .logo {
@@ -16,16 +19,18 @@
   gap: 6px;
   text-decoration: none;
 
+  &:focus-visible { outline: 2px solid #d8adfc; outline-offset: 4px; border-radius: 4px; }
+
   .logoSvg {
     width: 24px;
     height: 24px;
-    color: $purple;
+    color: #f6eaff;
   }
 
   .logoName {
     font-size: 22px;
     font-weight: 700;
-    color: $purple;
+    color: #f6eaff;
   }
 }
 
@@ -35,6 +40,7 @@
   gap: 12px;
   min-width: 0;
   max-width: 260px;
+  color: #2e2339;
 
   .fullName {
     min-width: 0;
@@ -81,5 +87,19 @@
       height: 32px;
       font-size: 14px;
     }
+  }
+}
+
+
+@media screen and (max-width: 760px) {
+  :host { padding-inline: 22px 16px; }
+  .logo .logoSvg { width: 27px; height: 27px; }
+  .logo .logoName {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }

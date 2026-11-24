@@ -5,8 +5,7 @@ import { CommonModule } from '@angular/common';
 import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {animate, style, transition, trigger} from "@angular/animations";
 import {TicketStateService} from "../../services/state/ticket-state.service";
-import {ISupportTicketDto} from "../../types/interfaces/consumer/ISupportTicketDto";
-import {debounceTime, firstValueFrom, fromEvent, Subscription} from "rxjs";
+import {debounceTime, filter, firstValueFrom, fromEvent, Subscription} from "rxjs";
 import {TransactionsApiService} from "../../services/api/transactions-api.service";
 
 @Component({
@@ -67,13 +66,14 @@ export class TicketsOutletComponent implements OnInit, OnDestroy {
       });
     }
 
-    this.documentScrollSub$ = fromEvent(document, "scroll")
+    this.documentScrollSub$ = fromEvent<Event>(document, "scroll", {capture: true})
       .pipe(
+        filter(event => event.target instanceof HTMLElement && event.target.tagName === 'APP-MAIN'),
         debounceTime(400))
       .subscribe(async e => {
-        const event = e as Event;
-        const target = event.target as Document;
-        if (this.ticketListLoaderAnimation || target.body.scrollHeight - window.innerHeight > window.scrollY + 15) return;
+        const target = e.target as HTMLElement;
+        const distanceFromEnd = target.scrollHeight - target.clientHeight - target.scrollTop;
+        if (this.ticketListLoaderAnimation || distanceFromEnd > 15) return;
         const lastTicket = this.tickets$.getValue().at(-1);
         if (!lastTicket) return;
 
@@ -124,8 +124,4 @@ export class TicketsOutletComponent implements OnInit, OnDestroy {
     }
   }
 
-  //other
-  identifyTicketDto(index: number, item: ISupportTicketDto){
-    return item.id;
-  }
 }
