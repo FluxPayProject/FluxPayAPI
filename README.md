@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./img/logo.png" width="150" height="150" alt="FluxPay logo"/>
+  <img src="./img/fluxpay-logo.svg" width="150" height="150" alt="FluxPay logo"/>
 </p>
 
 <div align="center">

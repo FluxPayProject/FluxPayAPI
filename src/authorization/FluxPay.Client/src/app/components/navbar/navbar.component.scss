@@ -13,18 +13,6 @@
   height: 100%;
 }
 
-.title {
-  color: $light-grey-p;
-  font-size: 20px;
-  font-weight: 700;
-  margin-left: 55px;
-  margin-bottom: 20px;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
-
 .logoutButton {
   padding: 0;
   border: 0;
@@ -259,10 +247,6 @@
     width: 300px;
   }
 
-  .title {
-    font-size: 16px;
-  }
-
   .item {
     height: 50px;
     margin-bottom: 8px;
@@ -440,10 +424,6 @@
 @media screen and (max-width: 1670px) {
   .navBarContainer {
     width: 240px;
-  }
-
-  .title {
-    margin-left: 30px;
   }
 
   .item {

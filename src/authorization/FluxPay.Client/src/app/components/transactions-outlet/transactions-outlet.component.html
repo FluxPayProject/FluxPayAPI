@@ -1,10 +1,12 @@
+<header class="transactionsHeading">
+  <span class="titleSpan">
+    <p class="title">Transactions</p>
+    <svg-icon src="../../../assets/svg/transaction.svg" class="titleTransactionSvg" />
+  </span>
+  <p class="overview">An overview of wallet, user information and transactions</p>
+</header>
 <div class="transactionsInfo">
   <div class="transactionsInfoContainer">
-    <span class="titleSpan">
-      <p class="title">Transactions</p>
-      <svg-icon src="../../../assets/svg/transaction.svg" class="titleTransactionSvg" />
-    </span>
-    <p class="overview">An overview of wallet, user information and transactions</p>
     <div class="walletAndUserInfoContainer">
       <div class="wallet">
         <p class="walletTitle">Wallet Balance</p>
@@ -13,7 +15,7 @@
             €{{user.wallet.balance}}
           </ng-container>
           <ng-template #userIsNull>
-            <p-skeleton class="skeletonDefault" />
+            <span class="skeleton skeletonDefault" aria-hidden="true"></span>
           </ng-template>
         </p>
         <div class="logo">
@@ -22,25 +24,20 @@
         </div>
       </div>
       <div class="userInfo">
-        <div class="userInfoAvatar"></div>
-        <div class="userInfoData">
-          <p class="userInfoFullName">
-            <ng-container *ngIf="user$ | async as user else userIsNull">
-              {{_textService.pullUsernameFromMail(user.email)}}
-            </ng-container>
-            <ng-template #userIsNull>
-              <p-skeleton class="skeletonDefault" />
-            </ng-template>
-          </p>
-          <span>
-            <ng-container *ngIf="user$ | async as user; else userIsNull">
-              <p class="userInfoId" appCopyText="{{user.id}}" copyLabel="Copy user ID" pTooltip="{{user.id}}">ID: {{user.id}}</p>
-            </ng-container>
-            <ng-template #userIsNull>
-              <p-skeleton class="skeletonDefault" />
-            </ng-template>
-          </span>
-        </div>
+        @if (user$ | async; as user) {
+          @let name = _textService.pullUsernameFromMail(user.email);
+          <app-avatar class="userInfoAvatar" [name]="name" />
+          <div class="userInfoData">
+            <p class="userInfoFullName">{{ name }}</p>
+            <p class="userInfoId" appCopyText="{{user.id}}" copyLabel="Copy user ID" title="{{user.id}}">ID: {{user.id}}</p>
+          </div>
+        } @else {
+          <span class="skeleton userInfoAvatar" aria-hidden="true"></span>
+          <div class="userInfoData">
+            <p class="userInfoFullName"><span class="skeleton skeletonDefault" aria-hidden="true"></span></p>
+            <span class="skeleton skeletonDefault" aria-hidden="true"></span>
+          </div>
+        }
       </div>
     </div>
     <div class="searchTransactions">
@@ -59,12 +56,12 @@
            (scroll)="onScrollTransactionsHandler($event)">
         <div *ngFor="let transaction of data.transactions; trackBy: identifyTransactionDto"
              class="transactionItem {{getTransactionColorClassName(transaction)}}">
-          <svg-icon src="../../../assets/svg/transaction.svg" appCopyText="{{transaction.id}}" copyLabel="Copy transaction ID" pTooltip="{{transaction.id}}" class="transactionSvg" />
+          <svg-icon src="../../../assets/svg/transaction.svg" appCopyText="{{transaction.id}}" copyLabel="Copy transaction ID" title="{{transaction.id}}" class="transactionSvg" />
           <div class="transactionItemInfo">
-            <p class="transactionItemFrom" appCopyText="{{transaction.fromUserId}}" copyLabel="Copy sender ID" pTooltip="{{transaction.fromUserId}}">
+            <p class="transactionItemFrom" appCopyText="{{transaction.fromUserId}}" copyLabel="Copy sender ID" title="{{transaction.fromUserId}}">
               From: {{transaction.fromUserId}}
             </p>
-            <p class="transactionItemTo" appCopyText="{{transaction.toUserId}}" copyLabel="Copy recipient ID" pTooltip="{{transaction.toUserId}}">
+            <p class="transactionItemTo" appCopyText="{{transaction.toUserId}}" copyLabel="Copy recipient ID" title="{{transaction.toUserId}}">
               To: {{transaction.toUserId}}
             </p>
             <p class="transactionItemAmount">
@@ -85,7 +82,7 @@
              *ngIf="data.searchTransactions.length > 0 && data.searchText.length > 0">
           <div *ngFor="let transaction of data.searchTransactions; trackBy: identifyTransactionDto"
                class="transactionItem {{getTransactionColorClassName(transaction)}}">
-            <svg-icon src="../../../assets/svg/transaction.svg" appCopyText="{{transaction.id}}" copyLabel="Copy transaction ID" pTooltip="{{transaction.id}}" class="transactionSvg" />
+            <svg-icon src="../../../assets/svg/transaction.svg" appCopyText="{{transaction.id}}" copyLabel="Copy transaction ID" title="{{transaction.id}}" class="transactionSvg" />
             <div class="transactionItemInfo">
               <p class="transactionItemFrom">
                 From: {{transaction.fromUserId}}
@@ -111,30 +108,42 @@
       </div>
     </ng-container>
     <div class="transactionList" *ngIf="!_transactionsStateService.wasRequested">
-      <p-skeleton class="skeletonTransactionItem" />
-      <p-skeleton class="skeletonTransactionItem" />
-      <p-skeleton class="skeletonTransactionItem" />
-      <p-skeleton class="skeletonTransactionItem" />
-      <p-skeleton class="skeletonTransactionItem" />
+      <span class="skeleton skeletonTransactionItem" aria-hidden="true"></span>
+      <span class="skeleton skeletonTransactionItem" aria-hidden="true"></span>
+      <span class="skeleton skeletonTransactionItem" aria-hidden="true"></span>
+      <span class="skeleton skeletonTransactionItem" aria-hidden="true"></span>
+      <span class="skeleton skeletonTransactionItem" aria-hidden="true"></span>
     </div>
   </div>
 </div>
-<div class="createNewTransaction">
-  <div class="createNewTransactionContainer">
-    <div [@rightBarAnimation]="">
-      <p class="createNewTransactionTitle">
-        Create New Transaction
-      </p>
-      <p-select class="createNewTransactionToInput" [options]="(contacts$ | async) ?? []" [(ngModel)]="toUserId" (onChange)="onChangeDropDownHandler($event)"
-                  placeholder="To: Receiver" [editable]="true" />
-      <input aria-label="Transaction amount" type="text" class="createNewTransactionAmountInput" (keydown.enter)="$event.preventDefault()" inputmode="numeric"
-             placeholder="Amount: €0" [(ngModel)]="amount" (keyup.enter)="sendMoneyToUser()"/>
-      <button type="button" [disabled]="paymentSubmission.isPending('transfer')" class="createNewTransactionOkButton" (click)="sendMoneyToUser()">
-        {{paymentSubmission.isResultDelayed('transfer') ? 'Awaiting confirmation' : paymentSubmission.isPending('transfer') ? 'Processing…' : 'Ok'}}
-      </button>
-      @if (paymentSubmission.isResultDelayed('transfer')) {
-        <p role="status">The payment result is still unconfirmed. Check your transaction history before trying again.</p>
-      }
+<aside class="transferPanel" aria-labelledby="transfer-title">
+  <form class="transferForm" [@rightBarAnimation]="" (ngSubmit)="sendMoneyToUser(transferAmount)">
+    <h2 id="transfer-title" class="transferTitle">
+      <svg-icon src="../../../assets/svg/transaction.svg" aria-hidden="true" />
+      Send money
+    </h2>
+
+    <div class="transferField">
+      <label for="transfer-recipient">Recipient</label>
+      <app-combobox class="transferRecipient" inputId="transfer-recipient" [options]="(contacts$ | async) ?? []"
+                    [value]="toUserId" (valueChange)="toUserId = $event"
+                    (optionSelected)="selectRecipient($event)" placeholder="Contact or user ID" />
     </div>
-  </div>
-</div>
+
+    <div class="transferField">
+      <label for="transfer-amount">Amount</label>
+      <div class="transferAmount">
+        <input #transferAmount id="transfer-amount" type="text" inputmode="decimal" placeholder="0.00"
+               aria-describedby="transfer-currency" [value]="amount" (input)="updateTransferAmount(transferAmount)" />
+        <span id="transfer-currency">EUR</span>
+      </div>
+    </div>
+
+    <button type="submit" [disabled]="paymentSubmission.isPending('transfer')" class="transferSubmit">
+      {{paymentSubmission.isResultDelayed('transfer') ? 'Awaiting confirmation' : paymentSubmission.isPending('transfer') ? 'Processing…' : 'Send money'}}
+    </button>
+    @if (paymentSubmission.isResultDelayed('transfer')) {
+      <p class="transferStatus" role="status">The payment result is still unconfirmed. Check your transaction history before trying again.</p>
+    }
+  </form>
+</aside>

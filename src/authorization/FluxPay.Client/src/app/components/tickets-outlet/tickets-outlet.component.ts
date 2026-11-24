@@ -1,5 +1,4 @@
-import {MessageService} from 'primeng/api';
-import { SkeletonModule } from 'primeng/skeleton';
+import { NotificationService } from '../../services/common/notification.service';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -12,7 +11,7 @@ import {TransactionsApiService} from "../../services/api/transactions-api.servic
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, AngularSvgIconModule, SkeletonModule],
+  imports: [CommonModule, FormsModule, AngularSvgIconModule],
   selector: 'app-tickets-outlet',
   templateUrl: './tickets-outlet.component.html',
   styleUrls: ['./tickets-outlet.component.scss'],
@@ -57,7 +56,7 @@ export class TicketsOutletComponent implements OnInit, OnDestroy {
   constructor(
     protected _ticketStateService: TicketStateService,
     private _transactionApiService: TransactionsApiService,
-    private _messageService: MessageService
+    private _messageService: NotificationService
   ) {}
 
   ngOnInit() {

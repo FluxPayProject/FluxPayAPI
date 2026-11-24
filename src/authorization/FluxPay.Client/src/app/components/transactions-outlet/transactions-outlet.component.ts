@@ -1,10 +1,11 @@
+import { parseEuroAmount, updateEuroAmount } from '../../services/common/euro-amount';
+import { AvatarComponent } from '../avatar/avatar.component';
+import { ComboboxComponent } from '../combobox/combobox.component';
+import { NotificationService } from '../../services/common/notification.service';
 import {listLoaderAnimation, rightBarAnimation} from '../../animations/outlet-animations';
 import {SignalrService} from "../../services/common/signalr.service";
 import {PaymentSubmissionService} from "../../services/state/payment-submission.service";
 import { CopyTextDirective } from '../../directives/copy-text.directive';
-import { TooltipModule } from 'primeng/tooltip';
-import { SelectModule } from 'primeng/select';
-import { SkeletonModule } from 'primeng/skeleton';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -29,11 +30,10 @@ import {DateService} from "../../services/common/date.service";
 import {ContactsStateService} from "../../services/state/contacts-state.service";
 import {UserStatus} from "../../types/enums/UserStatus";
 import {ErrorMessageConstants} from "../../constants/ErrorMessageConstants";
-import {MessageService} from "primeng/api";
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, AngularSvgIconModule, SkeletonModule, SelectModule, TooltipModule, CopyTextDirective],
+  imports: [AvatarComponent, ComboboxComponent, CommonModule, FormsModule, AngularSvgIconModule, CopyTextDirective],
   selector: 'app-transactions-outlet',
   templateUrl: './transactions-outlet.component.html',
   styleUrls: ['./transactions-outlet.component.scss'],
@@ -92,7 +92,7 @@ export class TransactionsOutletComponent implements OnInit, OnDestroy {
     protected _contactStateService: ContactsStateService,
     protected _textService: TextService,
     protected _dateService: DateService,
-    private _messageService: MessageService,
+    private _messageService: NotificationService,
     protected paymentSubmission: PaymentSubmissionService,
     private signalrService: SignalrService) {}
 
@@ -191,12 +191,9 @@ export class TransactionsOutletComponent implements OnInit, OnDestroy {
     }
   }
 
-  public onChangeDropDownHandler(event: any) {
-    const value = event.value as string;
-    const userId = value.split(" - ")[1];
-
-    this.toUserId = userId ?? value;
-    console.log(`new value: ${this.toUserId}`);
+  public selectRecipient(option: string) {
+    const separator = option.indexOf(' - ');
+    this.toUserId = separator === -1 ? option : option.slice(separator + 3);
   }
 
   //common
@@ -210,12 +207,17 @@ export class TransactionsOutletComponent implements OnInit, OnDestroy {
     return 'transactionItemColorPurple'
   }
 
-  async sendMoneyToUser() : Promise<void> {
+  public updateTransferAmount(field: HTMLInputElement) {
+    this.amount = updateEuroAmount(field, this.amount);
+  }
+
+  async sendMoneyToUser(amountField: HTMLInputElement): Promise<void> {
     if (!this.toUserId.trim()) {
       this._messageService.add({severity: 'error', summary: 'Error', detail: 'Select a recipient.'});
       return;
     }
-    if (!/^[0-9]{1,13}$/.test(this.amount) || +this.amount <= 0) {
+    const amount = parseEuroAmount(this.amount);
+    if (amount === null) {
       this._messageService.add({severity: 'error', summary: 'Error', detail: ErrorMessageConstants.AmountValueIsIncorrect});
       return;
     }
@@ -224,11 +226,14 @@ export class TransactionsOutletComponent implements OnInit, OnDestroy {
     if (!operationId) return;
 
     const submittedAmount = this.amount;
-    const sendMoneyToUserSub$ = this._transactionsApiService.createTransactionUserToUser(this.toUserId.trim(), +submittedAmount, operationId);
+    const sendMoneyToUserSub$ = this._transactionsApiService.createTransactionUserToUser(this.toUserId.trim(), amount, operationId);
 
     try {
       await firstValueFrom<IResult<ICreateTransactionUserToUserEvent>>(sendMoneyToUserSub$);
-      if (this.amount === submittedAmount) this.amount = "";
+      if (this.amount === submittedAmount) {
+        this.amount = '';
+        amountField.value = '';
+      }
     } catch {
       this.paymentSubmission.finish(operationId);
       this._messageService.add({severity: 'error', summary: 'Error', detail: 'Could not send the transfer.'});

@@ -1,0 +1,14 @@
+<input #field type="text" role="combobox" autocomplete="off" aria-autocomplete="list"
+       [attr.id]="inputId()" [attr.aria-label]="inputId() ? null : placeholder()" [attr.aria-expanded]="open && options().length > 0"
+       [attr.aria-controls]="open && options().length ? listId : null"
+       [attr.aria-activedescendant]="open && options()[activeIndex] !== undefined ? listId + '-' + activeIndex : null"
+       [placeholder]="placeholder()" [value]="value()" (input)="update(field.value)"
+       (keydown)="onKeydown($event)" (blur)="close()">
+<button type="button" class="toggle" tabindex="-1" [attr.aria-label]="'Show options for ' + placeholder()"
+        (mousedown)="$event.preventDefault()" (click)="toggle()"><span aria-hidden="true"></span></button>
+<ul class="options" [id]="listId" role="listbox" [attr.aria-label]="placeholder()" [hidden]="!open || !options().length">
+  @for (option of options(); track option; let index = $index) {
+    <li role="option" [id]="listId + '-' + index" [attr.aria-selected]="activeIndex === index"
+        (mousedown)="$event.preventDefault()" (click)="select(option)">{{ option }}</li>
+  }
+</ul>

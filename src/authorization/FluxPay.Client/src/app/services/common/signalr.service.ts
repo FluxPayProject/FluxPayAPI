@@ -1,3 +1,4 @@
+import { NotificationService } from './notification.service';
 import {Injectable} from '@angular/core';
 import {Subject} from "rxjs";
 import * as signalR from "@microsoft/signalr";
@@ -25,7 +26,6 @@ import {IUserNotSuspendingCanceledNotification} from "../../types/notifications/
 import {IUserSuspendingCanceledNotification} from "../../types/notifications/IUserSuspendingCanceledNotification";
 import {IUserRoleUpdatingCanceledNotification} from "../../types/notifications/IUserRoleUpdatingCanceledNotification";
 import {ITransactionCanceledNotification} from "../../types/notifications/ITransactionCanceledNotification";
-import {MessageService} from "primeng/api";
 import {TransactionsStateService} from "../state/transactions-state.service";
 import {ConfigService} from "./config.service";
 import {ProfileStateService} from "../state/profile-state.service";
@@ -48,7 +48,7 @@ export class SignalrService {
   private readonly reconnectDelays = [0, 2000, 10000, 30000];
 
   constructor(
-      private _messageService: MessageService,
+      private _messageService: NotificationService,
       private _transactionStateService: TransactionsStateService,
       private _creditCardsStateService: CreditCardsStateService,
       private _supportTicketStateService: SupportTicketStateService,

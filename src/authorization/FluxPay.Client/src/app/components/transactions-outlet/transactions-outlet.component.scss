@@ -3,8 +3,10 @@
 :host {
   display: grid;
   grid-template-areas:
+    "heading ."
     "maininfo rightbar";
-  grid-template-columns: auto 446px;
+  grid-template-columns: minmax(0, 1fr) 446px;
+  grid-template-rows: auto minmax(0, 1fr);
   width: 100%;
   height: 100%;
 }
@@ -18,13 +20,17 @@
   grid-area: maininfo;
 }
 
+.transactionsHeading {
+  grid-area: heading;
+  margin: 54px 28px 0 48px;
+}
+
 .transactionsInfoContainer {
   display: flex;
   flex-direction: column;
   height: 100%;
-  margin-top: 54px;
   margin-left: 48px;
-  margin-right: 48px;
+  margin-right: 28px;
 }
 
 .titleSpan {
@@ -107,11 +113,10 @@
     }
 
     .logoSvg {
-      width: 26px;
-      height: 13px;
+      width: 18px;
+      height: 18px;
       margin-top: 3px;
-      stroke: white;
-      fill: $purple
+      color: white;
     }
 
     .logoTitle {
@@ -129,9 +134,8 @@
 
   .userInfo {
     display: flex;
-    width: 100%;
-    min-width: 490px;
-    max-width: 650px;
+    flex: 1;
+    min-width: 0;
     height: 246px;
     background-color: white;
     border-radius: 10px;
@@ -143,11 +147,13 @@
       flex-shrink: 0;
       margin-top: 44px;
       margin-left: 33px;
-      border-radius: 100%;
-      background-color: $purple
+      border-radius: 50%;
+      font-size: 56px;
     }
 
     .userInfoData {
+      min-width: 0;
+      margin-right: 20px;
       margin-top: 62px;
       margin-left: 32px;
     }
@@ -160,10 +166,13 @@
       -ms-user-select: none;
       user-select: none;
       margin-bottom: 7px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .userInfoId {
-      width: 250px;
+      max-width: 250px;
       font-weight: 700;
       font-size: 15px;
       user-select: none;
@@ -344,65 +353,118 @@
   }
 }
 
-.createNewTransaction {
-  display: flex;
+.transferPanel {
   grid-area: rightbar;
-  width: 100%;
-  height: 100%;
-  background-color: white;
+  min-width: 0;
+  padding: 0 clamp(12px, 1.6vw, 28px) 20px 0;
+  background: $grey;
+}
 
-  .createNewTransactionContainer {
-    margin: 0 auto;
-    margin-top: 67px;
-    width: 90%;
+.transferForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  padding: clamp(16px, 1.5vw, 24px);
+  border: 1px solid #e2e5ea;
+  border-radius: 14px;
+  background: white;
+  color: #20242c;
+}
+
+.transferTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+  font-size: 22px;
+  font-weight: 700;
+
+  svg-icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 34px;
+    height: 34px;
+    padding: 8px;
+    border-radius: 9px;
+    background: #f0e3fa;
+    stroke: $purple;
   }
+}
 
-  .createNewTransactionTitle {
-    width: 100%;
+.transferField {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 7px;
+
+  label {
+    font-size: 15px;
     font-weight: 700;
-    font-size: 30px;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    margin-bottom: 25px;
-    text-align: center;
+  }
+}
+
+.transferRecipient,
+.transferAmount {
+  min-height: 44px;
+  border: 1px solid #cbd2dc;
+  border-radius: 8px;
+  font-size: 17px;
+}
+
+.transferRecipient {
+  --combobox-placeholder: #687382;
+  --combobox-option-font-size: 16px;
+}
+
+.transferAmount {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+
+  &:focus-within {
+    outline: 2px solid $purple;
+    outline-offset: -2px;
   }
 
-  .createNewTransactionAmountInput {
-    width: 100%;
-    height: 60px;
+  input {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    border: 0;
     outline: none;
-    margin-bottom: 32px;
-    padding: 0 35px;
-    font-weight: 700;
-    font-size: 20px;
-    border: none;
-    background-color: $grey-2;
-    border-radius: 10px;
-    color: black;
-
-    &::placeholder {
-      color: $light-grey-p;
-    }
+    background: transparent;
+    color: inherit;
+    font: inherit;
   }
 
-  .createNewTransactionOkButton {
-    width: 100%;
-    height: 60px;
-    border: none;
-    border-radius: 10px;
-    background-color: $purple;
-    font-weight: 700;
-    font-size: 22px;
-    color: white;
-    cursor: pointer;
-    transition: .1s;
+  input::placeholder { color: #687382; }
 
-    &:hover {
-      background-color: $purple-hover-button;
-    }
+  span {
+    color: #566170;
+    font-size: 14px;
+    font-weight: 700;
   }
+}
+
+.transferSubmit {
+  min-height: 44px;
+  margin-top: 2px;
+  border: 0;
+  border-radius: 8px;
+  background: $purple;
+  color: white;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover:enabled { background: $purple-hover-button; }
+  &:focus-visible { outline: 2px solid $purple; outline-offset: 3px; }
+  &:disabled { opacity: .65; cursor: wait; }
+}
+
+.transferStatus {
+  color: #566170;
+  font-size: 15px;
+  line-height: 1.4;
 }
 
 .emptyTransactionList {
@@ -422,45 +484,12 @@
   }
 }
 
-::ng-deep {
-  .createNewTransactionToInput {
-    &.p-select {
-      width: 100%;
-      height: 60px;
-      outline: none;
-      margin-bottom: 32px;
-      padding: 0 20px;
-      border: none;
-      background-color: $grey-2;
-      border-radius: 10px;
-    }
-
-    .p-ripple {
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      overflow: hidden;
-    }
-
-    & input {
-      font-weight: 700;
-      font-size: 20px;
-      color: black;
-      &::placeholder {
-        color: $light-grey-p;
-      }
-      &:hover {
-        cursor: text
-      }
-    }
-  }
-}
-
 @media screen and (max-width: 1880px) {
   :host {
-    grid-template-columns: auto 380px;
+    grid-template-columns: minmax(0, 1fr) 380px;
   }
 
-  .transactionsInfoContainer {
+  .transactionsHeading {
     margin-top: 30px;
   }
 
@@ -493,12 +522,12 @@
     }
 
     .userInfo {
-      width: 100%;
       height: 200px;
 
       .userInfoAvatar {
         width: 120px;
         height: 120px;
+        font-size: 48px;
         margin-top: 40px;
         margin-left: 30px;
       }
@@ -510,57 +539,6 @@
 
       .userInfoFullName {
         font-size: 25px;
-      }
-    }
-  }
-
-  .createNewTransaction {
-    width: 100%;
-    height: 100%;
-
-    .createNewTransactionContainer {
-      width: 90%;
-    }
-
-    .createNewTransactionTitle {
-      width: 100%;
-      font-weight: 700;
-      font-size: 25px;
-      margin-bottom: 25px;
-    }
-
-    .createNewTransactionAmountInput {
-      width: 100%;
-      height: 50px;
-      margin-bottom: 20px;
-      padding: 0 35px;
-      font-weight: 700;
-      font-size: 20px;
-    }
-
-    .createNewTransactionOkButton {
-      height: 50px;
-      font-weight: 700;
-      font-size: 18px;
-    }
-  }
-
-  ::ng-deep {
-    .createNewTransactionToInput {
-      &.p-select {
-        width: 100%;
-        height: 50px;
-        margin-bottom: 20px;
-        padding: 0 20px;
-      }
-
-      .p-overlay {
-        width: 320px;
-      }
-
-      & input {
-        font-weight: 700;
-        font-size: 20px;
       }
     }
   }
@@ -602,7 +580,7 @@
 
 @media screen and (max-width: 1670px) {
   :host {
-    grid-template-columns: auto 300px;
+    grid-template-columns: minmax(0, 1fr) 300px;
   }
 
   .title {
@@ -641,13 +619,12 @@
     }
 
     .userInfo {
-      max-width: 490px;
-      min-width: 450px;
       height: 170px;
 
       .userInfoAvatar {
         width: 100px;
         height: 100px;
+        font-size: 40px;
         margin-top: 35px;
         margin-left: 35px;
       }
@@ -663,61 +640,6 @@
         .userInfoId {
           font-size: 14px;
         }
-      }
-    }
-  }
-
-  .createNewTransaction {
-    width: 100%;
-    height: 100%;
-
-    .createNewTransactionContainer {
-      width: 90%;
-    }
-
-    .createNewTransactionTitle {
-      width: 100%;
-      font-weight: 700;
-      font-size: 18px;
-      margin-bottom: 25px;
-    }
-
-    .createNewTransactionToInput {
-      height: 40px;
-    }
-
-    .createNewTransactionAmountInput {
-      width: 100%;
-      height: 45px;
-      margin-bottom: 10px;
-      padding: 0 35px;
-      font-size: 17px;
-      border-radius: 8px;
-    }
-
-    .createNewTransactionOkButton {
-      height: 40px;
-      font-size: 16px;
-      border-radius: 8px;
-    }
-  }
-
-  ::ng-deep {
-    .createNewTransactionToInput {
-      &.p-select {
-        height: 45px;
-        margin-bottom: 10px;
-        padding: 0 10px;
-        font-size: 17px;
-        border-radius: 8px;
-      }
-
-      .p-overlay {
-        width: 200px;
-      }
-
-      & input {
-        font-size: 17px;
       }
     }
   }
@@ -763,5 +685,21 @@
       height: 20px;
       margin-top: 3px;
     }
+  }
+}
+@media screen and (max-width: 1150px) {
+  :host {
+    grid-template-areas: "heading" "maininfo" "rightbar";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    align-content: start;
+  }
+
+  .transferPanel {
+    padding: 0 28px 20px 48px;
+  }
+
+  .transferForm {
+    max-width: 420px;
   }
 }

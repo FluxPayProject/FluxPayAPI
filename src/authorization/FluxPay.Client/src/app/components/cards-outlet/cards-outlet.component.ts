@@ -1,22 +1,19 @@
+import { NotificationService } from '../../services/common/notification.service';
 import { NgxMaskDirective } from 'ngx-mask';
-import { ContextMenuModule } from 'primeng/contextmenu';
-import { SkeletonModule } from 'primeng/skeleton';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import {Component, OnInit} from '@angular/core';
+import {Component, ElementRef, OnInit, signal, ViewChild} from '@angular/core';
 import {animate, query, stagger, style, transition, trigger} from "@angular/animations";
 import {PaymentNetwork} from "../../types/enums/PaymentNetwork";
 import {CreditCardsStateService} from "../../services/state/credit-cards-state.service";
 import { ProfileStateService } from '../../services/state/profile-state.service';
 import {ICreditCardDto} from "../../types/interfaces/consumer/ICreditCardDto";
-import {MenuItem, MessageService} from "primeng/api";
-import {ErrorMessageConstants} from "../../constants/ErrorMessageConstants";
 import {TextService} from "../../services/common/text.service";
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, AngularSvgIconModule, SkeletonModule, ContextMenuModule, NgxMaskDirective],
+  imports: [CommonModule, FormsModule, AngularSvgIconModule, NgxMaskDirective],
   selector: 'app-cards-outlet',
   templateUrl: './cards-outlet.component.html',
   styleUrls: ['./cards-outlet.component.scss'],
@@ -45,33 +42,25 @@ export class CardsOutletComponent implements OnInit {
   //observable
   public cards$ = this._creditCardsStateService.cards$;
 
+  @ViewChild('removeCardDialog') private removeCardDialog!: ElementRef<HTMLDialogElement>;
+  @ViewChild('addCardButton') private addCardButton!: ElementRef<HTMLButtonElement>;
+
+  protected removal: { id: string; lastFour: string; trigger: HTMLButtonElement } | null = null;
+  protected readonly removingCard = signal(false);
+  protected readonly removalFailed = signal(false);
+
   // input data
   public cardHolderName = '';
   public cardNumber = '';
   public expiration = '';
   public cvv = '';
-  public paymentNetwork: PaymentNetwork = PaymentNetwork.Visa;
   public PaymentNetwork = PaymentNetwork;
-
-  // state
-  public selectedForContextMenuCard: ICreditCardDto | undefined;
-
-  // context menu
-  public contextMenuItems: MenuItem[] = [
-    {label: 'Delete', command: async () => {
-        const currentCardId = this.selectedForContextMenuCard?.id
-
-        if (!currentCardId) throw new Error(ErrorMessageConstants.CardNotFound);
-
-        await this.onDeleteCard(currentCardId);
-    }}
-  ]
 
   constructor(
     protected _creditCardsStateService: CreditCardsStateService,
     protected _profileStateService: ProfileStateService,
     protected _textService: TextService,
-    private _messageService: MessageService) {
+    private _messageService: NotificationService) {
 
   }
 
@@ -81,12 +70,43 @@ export class CardsOutletComponent implements OnInit {
     await this._creditCardsStateService.getCreditCardsAsync();
   }
 
+  protected get detectedPaymentNetwork(): PaymentNetwork | null {
+    if (this.cardNumber.startsWith('4')) return PaymentNetwork.Visa;
+    if (/^5[1-5]/.test(this.cardNumber)) return PaymentNetwork.MasterCard;
+
+    const prefix = Number(this.cardNumber.slice(0, 4));
+    return prefix >= 2221 && prefix <= 2720 ? PaymentNetwork.MasterCard : null;
+  }
+
   //events
-  async onDeleteCard(cardId: string) {
+  protected openRemoval(card: ICreditCardDto, trigger: HTMLButtonElement) {
+    this.removal = {id: card.id, lastFour: card.cardNumber.slice(-4), trigger};
+    this.removalFailed.set(false);
+    this.removeCardDialog.nativeElement.showModal();
+  }
+
+  protected onRemovalCancel(event: Event) {
+    if (this.removingCard()) event.preventDefault();
+  }
+
+  protected onRemovalClosed() {
+    const trigger = this.removal?.trigger;
+    this.removal = null;
+    (trigger?.isConnected ? trigger : this.addCardButton.nativeElement).focus();
+  }
+
+  protected async confirmRemoval() {
+    if (!this.removal || this.removingCard()) return;
+
+    this.removalFailed.set(false);
+    this.removingCard.set(true);
     try {
-      await this._creditCardsStateService.deleteCreditCardAsync(cardId);
+      await this._creditCardsStateService.deleteCreditCardAsync(this.removal.id);
+      this.removeCardDialog.nativeElement.close();
     } catch {
-      this._messageService.add({severity: 'error', summary: 'Error', detail: 'Could not delete the card.'});
+      this.removalFailed.set(true);
+    } finally {
+      this.removingCard.set(false);
     }
   }
 
@@ -94,6 +114,12 @@ export class CardsOutletComponent implements OnInit {
     if (!this.cardHolderName.trim() || !/^\d{16}$/.test(this.cardNumber) ||
         !/^\d{4}$/.test(this.expiration) || !/^\d{3}$/.test(this.cvv)) {
       this._messageService.add({severity: 'error', summary: 'Error', detail: 'Enter a cardholder name, 16-digit card number, expiry date and 3-digit security code.'});
+      return;
+    }
+
+    const network = this.detectedPaymentNetwork;
+    if (network === null) {
+      this._messageService.add({severity: 'error', summary: 'Error', detail: 'Only Visa and Mastercard are supported.'});
       return;
     }
 
@@ -118,7 +144,7 @@ export class CardsOutletComponent implements OnInit {
         cardNumber,
         expiration,
         cvv,
-        this.paymentNetwork);
+        network);
       if (this.cardHolderName === cardHolderName) this.cardHolderName = "";
       if (this.cardNumber === cardNumber) this.cardNumber = "";
       if (this.expiration === expiration.replace('/', '')) this.expiration = "";
@@ -126,11 +152,6 @@ export class CardsOutletComponent implements OnInit {
     } catch {
       this._messageService.add({severity: 'error', summary: 'Error', detail: 'Could not add the card.'});
     }
-  }
-
-  // action
-  public setSelectedCardForContextMenu(card: ICreditCardDto) {
-    this.selectedForContextMenuCard = card;
   }
 
   //other

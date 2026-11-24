@@ -16,7 +16,7 @@ spec:
       labels:
         app.kubernetes.io/name: {{ $name | quote }}
       annotations:
-        checksum/frontend: {{ pick .Values.frontend "baseUrl" "primeUiLicense" | toJson | sha256sum | quote }}
+        checksum/frontend: {{ pick .Values.frontend "baseUrl" | toJson | sha256sum | quote }}
     spec:
       automountServiceAccountToken: false
       {{- with .Values.imagePullSecrets }}

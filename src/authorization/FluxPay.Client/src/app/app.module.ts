@@ -1,3 +1,5 @@
+import { AvatarComponent } from './components/avatar/avatar.component';
+import { NotificationsComponent } from './components/notifications/notifications.component';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -12,19 +14,9 @@ import { NavbarComponent } from './components/navbar/navbar.component';
 import { APP_BASE_HREF } from '@angular/common';
 import {FormsModule} from "@angular/forms";
 import { LoginWindowComponent } from './components/login-window/login-window.component';
-import { SkeletonModule } from 'primeng/skeleton';
 import {provideEnvironmentNgxMask} from "ngx-mask";
-import {ToastModule} from "primeng/toast";
-import {MessageService} from "primeng/api";
-import { PrimeNGConfigType, providePrimeNG } from "primeng/config";
-import Lara from "@primeuix/themes/lara";
-import { AutoCompleteModule } from 'primeng/autocomplete';
 
 import { SessionExpirationInterceptor } from './services/common/session-expiration.interceptor';
-
-export const primeNgOptions: PrimeNGConfigType = {
-  theme: { preset: Lara, options: { darkModeSelector: false } }
-};
 
 @NgModule({
   declarations: [
@@ -42,9 +34,8 @@ export const primeNgOptions: PrimeNGConfigType = {
     BrowserAnimationsModule,
     AngularSvgIconModule.forRoot(),
     FormsModule,
-    SkeletonModule,
-    ToastModule,
-    AutoCompleteModule
+    AvatarComponent,
+    NotificationsComponent
   ],
   providers: [
     {
@@ -52,9 +43,7 @@ export const primeNgOptions: PrimeNGConfigType = {
       useValue: "/app"
     },
     { provide: HTTP_INTERCEPTORS, useClass: SessionExpirationInterceptor, multi: true },
-    provideEnvironmentNgxMask(),
-    providePrimeNG(primeNgOptions),
-    MessageService
+    provideEnvironmentNgxMask()
   ],
   bootstrap: [AppComponent]
 })

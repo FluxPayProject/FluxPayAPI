@@ -1,53 +1,78 @@
-<div class="contactsInfo">
-  <div class="contactsInfoContainer" [@.disabled]="!isAnimationAllowed">
-    <span class="titleSpan">
-      <p class="title">Contacts</p>
-      <svg-icon src="../../../assets/svg/contacts.svg" class="titleContactsSvg" />
-    </span>
-    <p class="overview">An overview of contacts</p>
-    <div class="search">
-      <input aria-label="Search contacts" type="text" class="searchInput" placeholder="Search Contacts"
-             [ngModel]="searchText$ | async" (ngModelChange)="searchText$.next($event)" />
-      <svg-icon src="../../../assets/svg/search.svg" class="searchSvg" />
-    </div>
-    <ng-container *ngIf="{
-    contacts: (contacts$ | async) || [],
-    searchedContacts: (searchedContacts$ | async) || [],
-    searchText: (searchText$ | async) || ''
-    } as data">
-      <div class="contactsList" [@contactListAnimation]=""
-           (@contactListAnimation.start)="setContactListAnimContinues(true)"
-           (@contactListAnimation.done)="setContactListAnimContinues(false)"
-           *ngIf="data.contacts.length > 0 && data.searchText.length === 0 && !searchedContactListAnimContinues; else noContacts">
-        <div *ngFor="let contact of data.contacts; trackBy: identifyContactDto" [@contactAnimation]="" class="contactItem">
-          <p class="contactItemUsername">Username: {{_textService.pullUsernameFromMail(contact.contact.email)}}</p>
-          <p class="contactItemStatus">Status: {{contact.contact.userStatus === 0 ? 'Active' : "Suspended"}}</p>
-          <button type="button" class="contactAction" [attr.aria-label]="'Remove contact ' + _textService.pullUsernameFromMail(contact.contact.email)" (click)="onClickDeleteContactHandler(contact.contactId)">
-            <svg-icon src="../../../assets/svg/minus.svg" class="plusSvg" aria-hidden="true" />
-          </button>
-        </div>
-      </div>
-      <ng-template #noContacts>
-        <div class="contactsList" [@contactListAnimation]=""
-             (@contactListAnimation.start)="setSearchedContactListAnimContinues(true)"
-             (@contactListAnimation.done)="setSearchedContactListAnimContinues(false)"
-             *ngIf="data.searchedContacts.length > 0 && data.searchText.length > 0 && !contactListAnimContinues">
-          <div *ngFor="let contact of data.searchedContacts; trackBy: identifyContactDto" [@contactAnimation]="" class="contactItem">
-            <p class="contactItemUsername">Username: {{_textService.pullUsernameFromMail(contact.contact.email)}}</p>
-            <p class="contactItemStatus">Status: {{contact.contact.userStatus === 0 ? 'Active' : "Suspended"}}</p>
-            <button type="button" class="contactAction" [attr.aria-label]="'Add contact ' + _textService.pullUsernameFromMail(contact.contact.email)" (click)="onClickAddContactHandler(contact.contactId)">
-              <svg-icon src="../../../assets/svg/plus.svg" class="plusSvg" aria-hidden="true" />
-            </button>
-          </div>
-        </div>
-      </ng-template>
-    </ng-container>
-    <div class="contactsList" *ngIf="!_contactsStateService.wasContactsRequested">
-      <p-skeleton class="skeletonContactItem" />
-      <p-skeleton class="skeletonContactItem" />
-      <p-skeleton class="skeletonContactItem" />
-      <p-skeleton class="skeletonContactItem" />
-    </div>
+<div class="contactsPage">
+  <h1>Contacts</h1>
+  <div class="contactSearch">
+    <svg-icon src="../../../assets/svg/search.svg" aria-hidden="true" />
+    <input type="search" aria-label="Search contacts and users" placeholder="Search by name or email"
+           [ngModel]="searchText$ | async" (ngModelChange)="searchText$.next($event)" />
   </div>
+
+  @let contacts = (contacts$ | async) ?? [];
+  @let query = (searchText$ | async)?.trim() ?? '';
+  @let saved = filterSaved(contacts, query);
+  @let results = excludeSaved((searchedContacts$ | async) ?? [], contacts);
+
+  <section class="contactSection" aria-labelledby="saved-contacts">
+    <h2 id="saved-contacts">Saved contacts</h2>
+    @if (loadingContacts()) {
+      <p class="listStatus" role="status">Loading contacts…</p>
+    } @else if (loadFailed()) {
+      <p class="listStatus" role="alert">Could not load contacts.</p>
+    } @else if (!saved.length) {
+      <p class="listStatus">{{query ? 'No saved contacts match your search.' : 'No saved contacts yet.'}}</p>
+    } @else {
+      <ul class="contactList">
+        @for (contact of saved; track contact.contactId) {
+          <li class="contactRow">
+            <ng-container *ngTemplateOutlet="identity; context: {$implicit: contact}" />
+            @if (removalId() === contact.contactId) {
+              <div class="contactActions" role="group" aria-label="Confirm contact removal">
+                <button type="button" [disabled]="removing()" (click)="removalId.set(null)">Cancel</button>
+                <button type="button" class="confirmRemove" [disabled]="removing()" (click)="removeContact(contact.contactId)">
+                  {{removing() ? 'Removing' : 'Remove'}}
+                </button>
+              </div>
+            } @else {
+              <button type="button" class="removeLink" [disabled]="removing()"
+                      [attr.aria-label]="'Remove contact ' + textService.pullUsernameFromMail(contact.contact.email)"
+                      (click)="removalId.set(contact.contactId)">Remove</button>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  @if (query) {
+    <section class="contactSection" aria-labelledby="directory-contacts">
+      <h2 id="directory-contacts">Find people</h2>
+      @if (searching()) {
+        <p class="listStatus" role="status">Searching…</p>
+      } @else if (searchFailed()) {
+        <p class="listStatus" role="alert">Could not search for people.</p>
+      } @else if (!results.length) {
+        <p class="listStatus">No people found.</p>
+      } @else {
+        <ul class="contactList">
+          @for (contact of results; track contact.contactId) {
+            <li class="contactRow">
+              <ng-container *ngTemplateOutlet="identity; context: {$implicit: contact}" />
+              <button type="button" class="addContact" (click)="addContact(contact.contactId)">Add contact</button>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
 </div>
-<div class="emptyBlock"></div>
+
+<ng-template #identity let-contact>
+  @let name = textService.pullUsernameFromMail(contact.contact.email);
+  <app-avatar class="contactAvatar" [name]="name" />
+  <div class="contactIdentity">
+    <p class="contactName">{{name}}</p>
+    <p class="contactId">{{contact.contactId}}</p>
+    @if (contact.contact.userStatus !== 0) {
+      <p class="contactStatus">Suspended</p>
+    }
+  </div>
+</ng-template>

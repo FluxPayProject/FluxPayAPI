@@ -1,12 +1,10 @@
+import { CdkMenuModule } from '@angular/cdk/menu';
 import { CopyTextDirective } from '../../directives/copy-text.directive';
-import { TooltipModule } from 'primeng/tooltip';
-import { ContextMenuModule } from 'primeng/contextmenu';
-import { SkeletonModule } from 'primeng/skeleton';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import {A11yModule} from '@angular/cdk/a11y';
-import {Component, ElementRef, HostListener, OnInit, QueryList, ViewChild, ViewChildren} from '@angular/core';
+import {Component, ElementRef, HostListener, OnInit, ViewChild} from '@angular/core';
 import {animate, query, stagger, style, transition, trigger} from "@angular/animations";
 import {UsersStateService} from "../../services/state/users-state.service";
 import {BehaviorSubject, debounceTime, filter, firstValueFrom, Subject} from "rxjs";
@@ -19,13 +17,11 @@ import {TransactionsApiService} from "../../services/api/transactions-api.servic
 import {ITransactionDto} from "../../types/interfaces/consumer/ITransactionDto";
 import {DateService} from "../../services/common/date.service";
 import {TransactionState} from "../../types/enums/TransactionState";
-import {MenuItem} from "primeng/api";
-import {ContextMenu} from "primeng/contextmenu";
 import {ErrorMessageConstants} from "../../constants/ErrorMessageConstants";
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, AngularSvgIconModule, SkeletonModule, ContextMenuModule, TooltipModule, CopyTextDirective, A11yModule],
+  imports: [CdkMenuModule, CommonModule, FormsModule, AngularSvgIconModule, CopyTextDirective, A11yModule],
   selector: 'app-users-outlet',
   templateUrl: './users-outlet.component.html',
   styleUrls: ['./users-outlet.component.scss'],
@@ -41,7 +37,6 @@ import {ErrorMessageConstants} from "../../constants/ErrorMessageConstants";
   ]
 })
 export class UsersOutletComponent implements OnInit {
-  @ViewChildren('userInfoWindowBodyTransactionContextMenu') ch!: QueryList<ContextMenu>
   @ViewChild('closeUserInfoButton') set closeUserInfoButton(button: ElementRef<HTMLButtonElement> | undefined) {
     button?.nativeElement.focus();
   }
@@ -64,24 +59,6 @@ export class UsersOutletComponent implements OnInit {
   //state
   public currentUserTransactionsInfoLoader = false;
   public showUserInfoWindow = false;
-  public selectedTransactionForContextMenu: ITransactionDto | undefined;
-
-  //contextmenu
-  public contextMenuItems: MenuItem[] = [
-    {label: 'Rollback', command: async () => {
-      if (!this.selectedTransactionForContextMenu) throw new Error(ErrorMessageConstants.TransactionIsNotSelected);
-      const transactionId = this.selectedTransactionForContextMenu.id;
-      const rollBackTransaction$ = this._transactionsApiService.rollBackTransaction(transactionId);
-      await firstValueFrom(rollBackTransaction$);
-      const transactionList = this.currentUserTransactionsInfo$.getValue();
-      transactionList.map(x => {
-        if (x.id !== transactionId) return;
-
-        x.transactionState = TransactionState.RolledBack;
-      });
-    }},
-  ];
-
   //types
   public UserStatus = UserStatus;
 
@@ -170,8 +147,10 @@ export class UsersOutletComponent implements OnInit {
     this.previousFocus = null;
   }
 
-  public setSelectedTransactionForContextMenu(transaction: ITransactionDto) {
-    this.selectedTransactionForContextMenu = transaction;
+  public async rollbackTransaction(transactionId: string) {
+    await firstValueFrom(this._transactionsApiService.rollBackTransaction(transactionId));
+    this.currentUserTransactionsInfo$.next(this.currentUserTransactionsInfo$.value.map(transaction =>
+      transaction.id === transactionId ? {...transaction, transactionState: TransactionState.RolledBack} : transaction));
   }
 
   //common
@@ -187,8 +166,4 @@ export class UsersOutletComponent implements OnInit {
     return item.id;
   }
 
-  hideAllContextMenu() {
-    const r = this.ch.toArray()
-    r.map(x => x.hide());
-  }
 }

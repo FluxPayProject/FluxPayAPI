@@ -1,6 +1,5 @@
 
-<div class="navBarContainer">
-  <p class="title">Menu</p>
+<nav class="navBarContainer" aria-label="Main navigation">
   <ng-container *ngIf="user$ | async as user; else noUser">
     <a routerLink="/transactions" class="item" routerLinkActive="itemActive" [@navbarLinkAnimation]="">
       <div class="itemIcon">
@@ -44,7 +43,7 @@
       </div>
       <p class="itemTitle">Users</p>
     </a>
-    <button type="button" class="item logoutButton" (click)="getLogout()" [@navbarLinkAnimation]="">
+    <button type="button" class="item logoutButton" (click)="logoutDialog.showModal()" [@navbarLinkAnimation]="">
       <div class="itemIcon">
         <svg-icon src="../../../assets/svg/logout.svg" class="logoutSvg" />
       </div>
@@ -52,10 +51,20 @@
     </button>
   </ng-container>
   <ng-template #noUser>
-    <p-skeleton class="skeletonNavLink" />
-    <p-skeleton class="skeletonNavLink" />
-    <p-skeleton class="skeletonNavLink" />
-    <p-skeleton class="skeletonNavLink" />
-    <p-skeleton class="skeletonNavLink" />
+    <span class="skeleton skeletonNavLink" aria-hidden="true"></span>
+    <span class="skeleton skeletonNavLink" aria-hidden="true"></span>
+    <span class="skeleton skeletonNavLink" aria-hidden="true"></span>
+    <span class="skeleton skeletonNavLink" aria-hidden="true"></span>
+    <span class="skeleton skeletonNavLink" aria-hidden="true"></span>
   </ng-template>
-</div>
+</nav>
+
+
+<dialog #logoutDialog class="confirmationDialog" aria-labelledby="logout-title" aria-describedby="logout-description">
+  <h2 id="logout-title">Log out?</h2>
+  <p id="logout-description">Are you sure you want to log out of FluxPay?</p>
+  <div class="confirmationActions">
+    <button type="button" autofocus (click)="logoutDialog.close()">Cancel</button>
+    <button type="button" class="confirmationDanger" (click)="getLogout()">Log out</button>
+  </div>
+</dialog>

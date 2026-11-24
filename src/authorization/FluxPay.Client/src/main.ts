@@ -1,10 +1,9 @@
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-import { AppModule, primeNgOptions } from './app/app.module';
+import { AppModule } from './app/app.module';
 import { SERVER_URL } from './app/services/common/config.service';
 
 interface FrontendConfig {
   baseUrl: unknown;
-  primeUiLicense?: string;
 }
 
 function validateBaseUrl(value: unknown): string {
@@ -31,7 +30,6 @@ async function bootstrap() {
 
   const config: FrontendConfig = await response.json();
   const baseUrl = validateBaseUrl(config.baseUrl);
-  primeNgOptions.license = config.primeUiLicense;
   await platformBrowserDynamic([{provide: SERVER_URL, useValue: baseUrl}]).bootstrapModule(AppModule);
 }
 

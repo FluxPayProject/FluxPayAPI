@@ -1,5 +1,5 @@
+import { NotificationService } from '../../services/common/notification.service';
 import {listLoaderAnimation, rightBarAnimation} from '../../animations/outlet-animations';
-import { SkeletonModule } from 'primeng/skeleton';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -10,11 +10,10 @@ import {debounceTime, firstValueFrom, fromEvent, Subscription} from "rxjs";
 import {SupportTicketStateService} from "../../services/state/support-ticket-state.service";
 import {ISupportTicketDto} from "../../types/interfaces/consumer/ISupportTicketDto";
 import {ProfileStateService} from "../../services/state/profile-state.service";
-import {MessageService} from "primeng/api";
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, AngularSvgIconModule, SkeletonModule],
+  imports: [CommonModule, FormsModule, AngularSvgIconModule],
   selector: 'app-support-outlet',
   templateUrl: './support-outlet.component.html',
   styleUrls: ['./support-outlet.component.scss'],
@@ -51,7 +50,7 @@ export class SupportOutletComponent implements OnInit, OnDestroy {
       private _ticketsApiService: TicketsApiService,
       protected _supportTicketStateService: SupportTicketStateService,
       protected _profileStateService : ProfileStateService,
-      private _messageService: MessageService
+      private _messageService: NotificationService
   ) {}
 
   ngOnInit() {
