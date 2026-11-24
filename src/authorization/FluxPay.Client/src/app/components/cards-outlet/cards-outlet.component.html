@@ -1,56 +1,92 @@
+<header class="cardsHeading">
+  <span class="titleSpan">
+    <p class="title">Cards</p>
+    <svg-icon src="../../../assets/svg/credit-card.svg" class="titleCardSvg"/>
+  </span>
+  <p class="overview">An overview of cards</p>
+</header>
 <div class="cardsInfo">
   <div class="cardsInfoContainer">
-    <span class="titleSpan">
-      <p class="title">Cards</p>
-      <svg-icon src="../../../assets/svg/credit-card.svg" class="titleCardSvg"/>
-    </span>
-    <p class="overview">An overview of cards</p>
     <ng-container *ngIf="cards$ | async as cards">
       <div class="cardList" [@cardListAnimation]="" *ngIf="cards.length > 0">
-        <div #cardItem *ngFor="let card of cards; trackBy: identifyCardDto" class="cardItem" [@cardItemAnimation]="">
+        <div *ngFor="let card of cards; trackBy: identifyCardDto" class="cardItem" [@cardItemAnimation]="">
+          <button #cardActions type="button" class="cardItemActions" (click)="openRemoval(card, cardActions)"
+                  [attr.aria-label]="'Remove card ending in ' + card.cardNumber.slice(-4)">
+            <svg-icon src="../../../assets/svg/trash.svg" aria-hidden="true" />
+          </button>
           <p class="cardItemTitle">{{card.paymentNetwork == PaymentNetwork.Visa ? 'Visa' : 'MasterCard'}}</p>
           <p class="cardItemNumbers">{{_textService.reformatCardNumbers(card.cardNumber)}}</p>
-          <p class="cardItemExpiryDate">{{card.expiration}}</p>
-          <p class="cardItemFullName">{{card.holderName}}</p>
-          <p-contextmenu [target]="cardItem" [autoZIndex]="true" [model]="contextMenuItems" appendTo="body" (onShow)="setSelectedCardForContextMenu(card)">
-          </p-contextmenu>
+          <div class="cardItemDetails">
+            <p class="cardItemFullName" [title]="card.holderName">{{card.holderName}}</p>
+            <p class="cardItemExpiryDate">{{card.expiration}}</p>
+          </div>
         </div>
       </div>
     </ng-container>
     <div class="cardList" *ngIf="!_creditCardsStateService.wereCardsRequested">
-      <p-skeleton class="skeletonCardItem" />
-      <p-skeleton class="skeletonCardItem" />
-      <p-skeleton class="skeletonCardItem" />
+      <span class="skeleton skeletonCardItem" aria-hidden="true"></span>
+      <span class="skeleton skeletonCardItem" aria-hidden="true"></span>
+      <span class="skeleton skeletonCardItem" aria-hidden="true"></span>
     </div>
   </div>
 </div>
-<div class="addNewCard">
-  <div class="addNewCardContainer">
-    <div [@rightBarAnimation]="">
-      <p class="addNewCardTitle">
-        Add New Card
+<aside class="addCardPanel" aria-labelledby="add-card-title">
+  <form class="addCardForm" autocomplete="off" [@rightBarAnimation]="" (ngSubmit)="onAttachCardOkClick()">
+    <h2 id="add-card-title" class="addCardTitle">
+      <svg-icon src="../../../assets/svg/credit-card.svg" aria-hidden="true" />
+      Add a card
+    </h2>
+
+    <div class="addCardField">
+      <label for="card-holder-name">Cardholder name</label>
+      <input id="card-holder-name" name="cardholder" type="text"
+             placeholder="Name on card" [(ngModel)]="cardHolderName" />
+    </div>
+
+    <div class="addCardField">
+      <label for="card-number">Card number</label>
+      <input id="card-number" name="number" type="text" inputmode="numeric"
+             placeholder="0000 0000 0000 0000" mask="0000 0000 0000 0000" [(ngModel)]="cardNumber"
+             aria-describedby="card-network-status" />
+      <p id="card-network-status" class="cardNetworkStatus" aria-live="polite">
+        @if (detectedPaymentNetwork === PaymentNetwork.Visa) {
+          Visa
+        } @else if (detectedPaymentNetwork === PaymentNetwork.MasterCard) {
+          Mastercard
+        } @else if (cardNumber.length === 16) {
+          Only Visa and Mastercard are supported.
+        }
       </p>
-      <input aria-label="Cardholder name" type="text" class="addNewCardInput"
-             (keydown.enter)="$event.preventDefault()" (keyup.enter)="onAttachCardOkClick()"
-             placeholder="Card Holder Name" id="CardHolderName"
-             [(ngModel)]="cardHolderName"/>
-      <input aria-label="Card number" type="text" class="addNewCardInput"
-             (keydown.enter)="$event.preventDefault()" (keyup.enter)="onAttachCardOkClick()"
-             placeholder="0000 0000 0000 0000" id="CardNumber" mask="0000 0000 0000 0000"
-             [(ngModel)]="cardNumber"/>
-      <input aria-label="Expiration date" type="text" class="addNewCardInput"
-             (keydown.enter)="$event.preventDefault()" (keyup.enter)="onAttachCardOkClick()"
-             placeholder="mm/yy" id="Expiration" mask="00/00"
-             [(ngModel)]="expiration"/>
-      <input aria-label="Security code" type="text" class="addNewCardInput"
-             (keydown.enter)="$event.preventDefault()" (keyup.enter)="onAttachCardOkClick()"
-             placeholder="CVV/CVC" id="Cvv" mask="000"
-             [(ngModel)]="cvv"/>
-      <select aria-label="Payment network" [(ngModel)]="paymentNetwork" class="addNewCardInput">
-        <option [ngValue]="PaymentNetwork.Visa">Visa</option>
-        <option [ngValue]="PaymentNetwork.MasterCard">Master Card</option>
-      </select>
-      <button class="addNewCardOkButton" (click)="onAttachCardOkClick()">Ok</button>
     </div>
+
+    <div class="addCardFieldRow">
+      <div class="addCardField">
+        <label for="card-expiration">Expiry date</label>
+        <input id="card-expiration" name="expiration" type="text" inputmode="numeric"
+               placeholder="MM/YY" mask="00/00" [(ngModel)]="expiration" />
+      </div>
+      <div class="addCardField">
+        <label for="card-cvv">Security code</label>
+        <input id="card-cvv" name="cvv" type="password" inputmode="numeric"
+               placeholder="CVV" mask="000" [(ngModel)]="cvv" />
+      </div>
+    </div>
+
+    <button #addCardButton class="addCardSubmit" type="submit">Add card</button>
+  </form>
+</aside>
+
+<dialog #removeCardDialog class="confirmationDialog" aria-labelledby="remove-card-title"
+        aria-describedby="remove-card-description" (cancel)="onRemovalCancel($event)" (close)="onRemovalClosed()">
+  <h2 id="remove-card-title">Remove card?</h2>
+  <p id="remove-card-description">The card ending in <strong>{{ removal?.lastFour }}</strong> will be removed from your wallet.</p>
+  @if (removalFailed()) {
+    <p class="removeCardError" role="alert">Could not remove the card. Try again.</p>
+  }
+  <div class="confirmationActions">
+    <button type="button" autofocus [disabled]="removingCard()" (click)="removeCardDialog.close()">Cancel</button>
+    <button type="button" class="confirmationDanger confirmCardRemoval" [disabled]="removingCard()" (click)="confirmRemoval()">
+      {{ removingCard() ? 'Removing' : 'Remove card' }}
+    </button>
   </div>
-</div>
+</dialog>

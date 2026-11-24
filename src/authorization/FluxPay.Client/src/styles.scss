@@ -24,6 +24,8 @@ time, mark, audio, video {
 	font: inherit;
 	vertical-align: baseline;
 }
+@import '@angular/cdk/overlay-prebuilt.css';
+
 /* HTML5 display-role reset for older browsers */
 article, aside, details, figcaption, figure, 
 footer, header, hgroup, menu, nav, section {
@@ -58,7 +60,45 @@ body {
   height: 100vh;
 }
 
-//skeletons
+// Loading placeholders
+.skeleton {
+  display: block;
+  background: #e8edf1;
+  animation: skeleton-pulse 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes skeleton-pulse {
+  to { opacity: .55; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; }
+}
+
+.fluxpay-context-menu {
+  display: flex;
+  min-width: 100px;
+  padding: 4px;
+  border: 1px solid #ccd2d8;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 4px 10px #0002;
+}
+
+.fluxpay-context-menu button {
+  flex: 1;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #252a34;
+  text-align: left;
+  cursor: pointer;
+}
+
+.fluxpay-context-menu button:hover,
+.fluxpay-context-menu button:focus-visible { background: #f0e3fa; }
+
 .skeletonDefault {
   width: 140px !important;
   height: 20px !important;
@@ -72,12 +112,6 @@ body {
   margin-bottom: 12px;
 }
 
-.skeletonCardItem {
-  width: 290px !important;
-  height: 183px !important;
-  border-radius: 10px !important;
-}
-
 .skeletonContactItem {
   width: 100% !important;
   height: 60px !important;
@@ -86,33 +120,72 @@ body {
   padding: 13px !important;
 }
 
-.skeletonSupportTicketItem {
-  width: 100% !important;
-  height: 80px !important;
-  border-radius: 10px !important;
-  padding: 27px !important;
-  margin-bottom: 10px !important;
-}
-
-.skeletonTicketItem {
-  width: 100% !important;
-  height: 80px !important;
-  border-radius: 10px !important;
-  padding: 27px !important;
-  margin-bottom: 10px !important;
-}
-
-.skeletonUserItem {
-  width: 100% !important;
-  height: 60px !important;
-  border-radius: 10px !important;
-  padding: 27px !important;
-  margin-bottom: 10px !important;
-}
-
 .skeletonNavLink {
   width: 90% !important;
   height: 50px !important;
   margin: 0 auto 25px;
   border-radius: 5px !important;
 }
+app-cards-outlet .addCardTitle svg path {
+  fill: currentColor;
+}
+
+.confirmationDialog {
+  width: min(400px, calc(100% - 32px));
+  margin: auto;
+  padding: 24px;
+  border: 1px solid #e2e5ea;
+  border-radius: 14px;
+  background: white;
+  color: #20242c;
+
+  &::backdrop { background: rgb(25 16 38 / 42%); }
+  h2 { margin: 0 0 10px; font-size: 22px; font-weight: 700; }
+  p { font-size: 15px; line-height: 1.5; }
+  strong { font-weight: 700; }
+}
+
+.confirmationActions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+
+  button {
+    min-height: 42px;
+    padding: 0 14px;
+    border: 1px solid #cbd2dc;
+    border-radius: 8px;
+    background: white;
+    color: #20242c;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+
+    &:focus-visible { outline: 2px solid #8a21dc; outline-offset: 2px; }
+    &:disabled { opacity: .6; cursor: wait; }
+  }
+
+  .confirmationDanger {
+    border-color: #b32136;
+    background: #b32136;
+    color: white;
+  }
+}
+
+app-navbar .itemIcon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+app-navbar .transactionSvg path,
+app-navbar .contactsSvg path,
+app-navbar .ticketSvg path,
+app-navbar .usersSvg path { stroke: currentColor; }
+
+app-navbar .cardSvg path,
+app-navbar .depositSvg path,
+app-navbar .supportSvg path,
+app-navbar .logoutSvg path { fill: currentColor; }

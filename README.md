@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./img/logo.png" width="150" height="150" alt="FluxPay logo"/>
+  <img src="./img/fluxpay-logo.svg" width="150" height="150" alt="FluxPay logo"/>
 </p>
 
 <div align="center">
@@ -19,9 +19,9 @@ FluxPayAPI offers realtime communication using SignalR.
 
 - **.NET SDK 10:** https://dotnet.microsoft.com/en-us/download
 - **NVM for windows:** https://github.com/coreybutler/nvm-windows
-- **Angular CLI:** `15.2.6`
-- **NodeJS:** `18.15.0`
-- **NPM:** `9.5.0`
+- **Angular CLI:** `22.3.x` (installed with the client dependencies)
+- **Node.js:** `24.16.0`
+- **npm:** `11.16.0`
 - **Docker:** https://docs.docker.com/get-docker/
 - **IDE**: Visual Studio or JetBrains Rider
 
@@ -48,7 +48,7 @@ FluxPayAPI offers realtime communication using SignalR.
 ## Infrastructure diagram
 
 Setup: [Azure infrastructure](terraform/infrastructure/README.md),
-[Azure DevOps](terraform/azure-devops/variable-groups/README.md),
+[Azure DevOps](terraform/azure-devops/README.md),
 [Cloudflare DNS](terraform/cloudflare/README.md).
 
 ![./img/infrastructure_diagram.png](./img/infrastructure_diagram.png)
@@ -75,7 +75,7 @@ archived assets and the dev acceptance checks.
 ## Technology stack
 
 - **SDK:** `.NET 10`
-- **Frameworks:** `ASP .NET Core`, `Angular 15`
+- **Frameworks:** `ASP .NET Core`, `Angular 22`
 - **Persistence:**
     - Database: `PostgreSQL 15`
     - ORM: `Entity Framework Core`
@@ -83,7 +83,7 @@ archived assets and the dev acceptance checks.
 - **Presentation:**
     - API Documentation: `OpenAPI (Swagger)`
     - Realtime Communication: `SignalR`
-    - Frontend Development: `Angular 15`
+    - Frontend Development: `Angular 22`
     - Microservices communication: `RabbitMQ`, `GRPC`
 - **Unit and Integration Testing:** `XUnit`, `FluentAssertions`
 - **Containerization:** `Docker`, `k8s`
@@ -159,7 +159,7 @@ for deployment or rollback. Version tags are immutable. The `latest` tag and
 registry cache tags are mutable. Release and PR builds import the default cache
 and export to `buildcache-v2-release` and `buildcache-v2-pr`, respectively.
 
-Pipeline credentials and permissions: [Azure DevOps setup](terraform/azure-devops/variable-groups/README.md).
+Pipeline credentials and permissions: [Azure DevOps setup](terraform/azure-devops/README.md).
 
 ## Screenshots
 

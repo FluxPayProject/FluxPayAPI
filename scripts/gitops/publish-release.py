@@ -12,6 +12,7 @@ import time
 from ruamel.yaml import YAML
 
 
+BUILD_VERSION_ENV = "FLUXPAY_BUILD_VERSION"
 SERVICES = ("authorization", "consumer", "sender")
 OVERLAY = Path("overlays/aks/fluxpay")
 BASE_BRANCH = "master"
@@ -56,11 +57,14 @@ def update_overlay(checkout, service, version, digest, *, existing_branch):
         raise ValueError(f"Expected a tag-based chart pin for {service}")
 
     values_path = overlay / f"values-{service}.yaml"
-    image = yaml.load(values_path)["image"]
+    values = yaml.load(values_path)
+    image = values["image"]
+    env = values["env"]
     if not DIGEST.fullmatch(str(image.get("digest"))):
         raise ValueError(f"Expected an existing image digest pin for {service}")
     tags = [chart_ref["tag"], image["tag"]]
-    if chart["url"] == chart_url and all(tag == version for tag in tags) and image["digest"] == digest:
+    if (chart["url"] == chart_url and all(tag == version for tag in tags)
+            and image["digest"] == digest and env.get(BUILD_VERSION_ENV) == version):
         print(f"Flux already references {service} {version}")
         return False
     if existing_branch and max(map(run_id, tags)) > run_id(version):
@@ -68,7 +72,16 @@ def update_overlay(checkout, service, version, digest, *, existing_branch):
         return False
 
     replace_values(sources_path, [(chart, "url", chart_url), (chart_ref, "tag", version)])
-    replace_values(values_path, [(image, "digest", digest), (image, "tag", version)])
+    changes = [(image, "digest", digest), (image, "tag", version)]
+    if BUILD_VERSION_ENV in env:
+        changes.append((env, BUILD_VERSION_ENV, version))
+    replace_values(values_path, changes)
+    if BUILD_VERSION_ENV not in env:
+        first_key = next(iter(env))
+        line, column = env.lc.key(first_key)
+        lines = values_path.read_text().splitlines(keepends=True)
+        lines.insert(line, f'{" " * column}{BUILD_VERSION_ENV}: "{version}"\n')
+        values_path.write_text("".join(lines))
     return True
 
 

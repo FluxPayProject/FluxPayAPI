@@ -1,12 +1,10 @@
 using FluxPayAPI.Consumer.BusinessLogic.Models;
-using FluxPayAPI.Consumer.Domain.Constants;
 using FluxPayAPI.Consumer.Persistence;
 using FluxPayAPI.Shared.Application.Abstractions;
 using FluxPayAPI.Shared.DTO.Abstractions;
 using FluxPayAPI.Shared.DTO.Enums;
 using FluxPayAPI.Shared.DTO.Responses;
 using FluxPayAPI.Shared.DTO.Responses.Errors;
-using Microsoft.EntityFrameworkCore;
 
 namespace FluxPayAPI.Consumer.BusinessLogic.CommandHandlers;
 
@@ -21,25 +19,12 @@ public class NotSuspendUserCommandHandler : ICommandHandler<NotSuspendUserComman
 
     public async Task<IResult<UserDto, Error>> HandleAsync(NotSuspendUserCommand command)
     {
-        var requester = await _context.UserEntities.FirstOrDefaultAsync(x => x.Id == command.RequesterId);
-
-        if (requester == null)
+        var (user, error) = await AdminUserLookup.FindAsync(_context, command.RequesterId, command.UserId);
+        if (error != null)
         {
-            return new Result<UserDto>(new DbEntityNotFoundError(ResponseMessages.RequesterNotFound));
+            return new Result<UserDto>(error);
         }
 
-        if (requester.UserRole != UserRole.Admin)
-        {
-            return new Result<UserDto>(new ConflictError(ResponseMessages.RequesterIsNotAdmin));
-        }
-        
-        var user = await _context.UserEntities.FirstOrDefaultAsync(x => x.Id == command.UserId);
-
-        if (user == null)
-        {
-            return new Result<UserDto>(new DbEntityNotFoundError(ResponseMessages.UserNotFound));
-        }
-        
         user.UpdateUserStatus(UserStatus.Active);
 
         _context.UserEntities.Update(user);

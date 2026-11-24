@@ -57,6 +57,7 @@ ingress:
 
 # Public application settings. Put credential references in secretEnv.
 env:
+  FLUXPAY_BUILD_VERSION: "dev"
   ASPNETCORE_ENVIRONMENT: Kubernetes
 
 # Existing Secret names and keys in the Helm release namespace.

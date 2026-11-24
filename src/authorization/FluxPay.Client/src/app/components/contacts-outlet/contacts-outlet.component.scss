@@ -1,260 +1,80 @@
 @use "../../app.component.scss" as *;
 
-:host {
+.contactsPage {
   display: grid;
-  grid-template-areas:
-    "maininfo rightbar";
-  grid-template-columns: auto 446px;
-  width: 100%;
-  height: 100%;
+  gap: 20px;
+  width: min(100%, 920px);
+  padding: 36px clamp(16px, 3vw, 48px);
+  color: #20242c;
 }
 
-.contactsInfo {
-  width: 100%;
-  height: 100%;
-  flex-shrink: 0;
-  grid-area: maininfo;
-}
+h1 { font-size: 30px; font-weight: 700; }
+h2 { font-size: 18px; font-weight: 700; }
 
-.contactsInfoContainer {
-  margin-top: 54px;
-  margin-left: 48px;
-  margin-right: 48px;
-}
-
-.titleSpan {
+.contactSearch {
   display: flex;
-}
-
-.title {
-  font-weight: 700;
-  font-size: 40px;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  margin-bottom: 12px;
-}
-
-.titleContactsSvg {
-  width: 35px;
-  height: 35px;
-  margin-top: 2px;
-  margin-left: 10px;
-
-  path {
-    stroke: black;
-  }
-}
-
-.overview {
-  color: $grey-p;
-  font-weight: 700;
-  font-size: 16px;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  margin-bottom: 30px;
-}
-
-.search {
-  position: relative;
-  width: 100%;
-  height: 72px;
-  margin-bottom: 20px;
-
-  .searchInput {
-    width: 100%;
-    height: 100%;
-    outline: none;
-    border: none;
-    color: $grey-p;
-    font-weight: 700;
-    font-size: 20px;
-    text-indent: 35px;
-    border-radius: 10px;
-
-    &::placeholder {
-      color: $light-grey-p;
-    }
-  }
-
-  .searchSvg {
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    top: 19px;
-    right: 19px;
-    stroke: $light-grey-svg;
-  }
-}
-
-.contactsList {
-  width: 100%;
-}
-
-.contactItem {
-  position: relative;
-  display: flex;
-  width: 100%;
-  height: 72px;
-  margin-bottom: 20px;
-  background-color: white;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1px solid #cbd2dc;
   border-radius: 10px;
-  padding: 13px;
-  font-weight: 700;
-  font-size: 20px;
+  background: white;
 
-  .contactItemUsername {
-    width: 250px;
-    margin-top: 15px;
-    margin-left: 36px;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
-
-  .contactItemStatus {
-    margin-top: 15px;
-    margin-left: 87px;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
-
-  .plusSvg {
-    position: absolute;
-    width: 45px;
-    height: 45px;
-    top: 13px;
-    right: 14px;
-    cursor: pointer;
-
-    path {
-      stroke: $light-grey-svg;
-    }
-  }
+  &:focus-within { outline: 2px solid $purple; outline-offset: -2px; }
+  svg-icon { width: 20px; height: 20px; flex-shrink: 0; stroke: #687382; }
+  input { flex: 1; min-width: 0; height: 46px; padding: 0; border: 0; outline: none; font-size: 16px; }
 }
 
-.emptyBlock {
+.contactSection {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid #e2e5ea;
+  border-radius: 14px;
+  background: white;
+}
+
+.contactList { margin: 0; padding: 0; }
+
+.contactRow {
   display: flex;
-  width: 100%;
-  height: 100%;
-  background-color: white;
-  grid-area: rightbar;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-height: 64px;
+  padding: 10px 0;
+
+  & + & { border-top: 1px solid #edf0f3; }
 }
 
-@media screen and (max-width: 1880px) {
-  :host {
-    grid-template-columns: auto 380px;
-  }
+.contactAvatar { flex: 0 0 42px; height: 42px; font-size: 16px; }
+.contactIdentity { flex: 1; min-width: 90px; }
+.contactName { font-size: 16px; font-weight: 700; overflow-wrap: anywhere; }
+.contactId, .contactStatus, .listStatus { font-size: 14px; line-height: 1.45; color: #566170; overflow-wrap: anywhere; }
+.contactStatus { color: #92263a; }
 
-  .contactsInfoContainer {
-    margin-top: 30px;
-  }
+.contactActions { display: flex; gap: 6px; }
 
-  .title {
-    font-size: 35px;
-  }
+.contactRow button {
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid #e1e5e9;
+  border-radius: 7px;
+  background: white;
+  color: #26313f;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
 
-  .titleCardSvg {
-    width: 27px;
-    height: 27px;
-  }
-
-  .search {
-    height: 55px;
-
-    .searchInput {
-      font-size: 18px;
-    }
-
-    .searchSvg {
-      width: 25px;
-      height: 25px;
-      top: 15px;
-      right: 15px;
-    }
-  }
-
-  .contactItem {
-    height: 60px;
-    padding: 7px;
-    font-size: 18px;
-
-    .plusSvg {
-      width: 40px;
-      height: 40px;
-      top: 10px;
-      right: 10px;
-    }
-  }
+  &:focus-visible { outline: 2px solid $purple; outline-offset: 2px; }
+  &:disabled { opacity: .6; cursor: wait; }
 }
 
-@media screen and (max-width: 1670px) {
-  :host {
-    grid-template-columns: auto 300px;
-  }
-
-  .contactsInfoContainer {
-    margin-top: 30px;
-  }
-
-  .title {
-    font-size: 26px;
-    margin-bottom: 8px;
-  }
-
-  .titleContactsSvg {
-    width: 20px;
-    height: 20px;
-  }
-
-  .overview {
-    font-size: 14px;
-    margin-bottom: 20px;
-  }
-
-  .search {
-    height: 40px;
-    margin-bottom: 10px;
-
-    .searchInput {
-      font-size: 14px;
-    }
-
-    .searchSvg {
-      width: 20px;
-      height: 20px;
-      top: 10px;
-      right: 10px;
-    }
-  }
-
-  .contactItem {
-    height: 45px;
-    padding: 2px;
-    font-size: 14px;
-    margin-bottom: 10px;
-
-    .plusSvg {
-      width: 20px;
-      height: 20px;
-      top: 14px;
-      right: 14px;
-    }
-  }
-
-  ::ng-deep {
-    .skeletonContactItem {
-      width: 100% !important;
-      height: 45px !important;
-      margin-bottom: 10px !important;
-      border-radius: 10px !important;
-      padding: 2px !important;
-    }
-  }
+.contactRow .removeLink {
+  border-color: transparent;
+  color: #a22034;
+  &:hover:enabled { background: #fff0f2; }
 }
+
+.contactRow .confirmRemove { background: #a22034; border-color: #a22034; color: white; }
+.contactRow .addContact { color: $purple; border-color: #dfcaef; background: #f7effc; }

@@ -1,11 +1,12 @@
+import { AvatarComponent } from '../avatar/avatar.component';
+import { NotificationService } from '../../services/common/notification.service';
+import { CdkMenuModule } from '@angular/cdk/menu';
 import { CopyTextDirective } from '../../directives/copy-text.directive';
-import { TooltipModule } from 'primeng/tooltip';
-import { ContextMenuModule } from 'primeng/contextmenu';
-import { SkeletonModule } from 'primeng/skeleton';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import {Component, OnInit, QueryList, ViewChildren} from '@angular/core';
+import {A11yModule} from '@angular/cdk/a11y';
+import {Component, ElementRef, HostListener, OnInit, signal, ViewChild} from '@angular/core';
 import {animate, query, stagger, style, transition, trigger} from "@angular/animations";
 import {UsersStateService} from "../../services/state/users-state.service";
 import {BehaviorSubject, debounceTime, filter, firstValueFrom, Subject} from "rxjs";
@@ -18,13 +19,11 @@ import {TransactionsApiService} from "../../services/api/transactions-api.servic
 import {ITransactionDto} from "../../types/interfaces/consumer/ITransactionDto";
 import {DateService} from "../../services/common/date.service";
 import {TransactionState} from "../../types/enums/TransactionState";
-import {MenuItem} from "primeng/api";
-import {ContextMenu} from "primeng/contextmenu";
 import {ErrorMessageConstants} from "../../constants/ErrorMessageConstants";
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, AngularSvgIconModule, SkeletonModule, ContextMenuModule, TooltipModule, CopyTextDirective],
+  imports: [AvatarComponent, CdkMenuModule, CommonModule, FormsModule, AngularSvgIconModule, CopyTextDirective, A11yModule],
   selector: 'app-users-outlet',
   templateUrl: './users-outlet.component.html',
   styleUrls: ['./users-outlet.component.scss'],
@@ -40,7 +39,14 @@ import {ErrorMessageConstants} from "../../constants/ErrorMessageConstants";
   ]
 })
 export class UsersOutletComponent implements OnInit {
-  @ViewChildren('userInfoWindowBodyTransactionContextMenu') ch!: QueryList<ContextMenu>
+  @ViewChild('closeUserInfoButton') set closeUserInfoButton(button: ElementRef<HTMLButtonElement> | undefined) {
+    button?.nativeElement.focus();
+  }
+  private previousFocus: HTMLElement | null = null;
+
+  @HostListener('document:keydown.escape') onEscape() {
+    if (this.showUserInfoWindow) this.closeUserTransactionsInfo();
+  }
 
   //notifiers
   public transactionListScrolledToEndNotifier$ = new Subject<void>();
@@ -55,29 +61,13 @@ export class UsersOutletComponent implements OnInit {
   //state
   public currentUserTransactionsInfoLoader = false;
   public showUserInfoWindow = false;
-  public selectedTransactionForContextMenu: ITransactionDto | undefined;
-
-  //contextmenu
-  public contextMenuItems: MenuItem[] = [
-    {label: 'Rollback', command: async () => {
-      if (!this.selectedTransactionForContextMenu) throw new Error(ErrorMessageConstants.TransactionIsNotSelected);
-      const transactionId = this.selectedTransactionForContextMenu.id;
-      const rollBackTransaction$ = this._transactionsApiService.rollBackTransaction(transactionId);
-      await firstValueFrom(rollBackTransaction$);
-      const transactionList = this.currentUserTransactionsInfo$.getValue();
-      transactionList.map(x => {
-        if (x.id !== transactionId) return;
-
-        x.transactionState = TransactionState.RolledBack;
-      });
-    }},
-  ];
-
   //types
   public UserStatus = UserStatus;
+  protected readonly changingStatus = signal<ReadonlySet<string>>(new Set());
 
   constructor(
       private _usersApiService: UsersApiService,
+      private notifications: NotificationService,
       protected _usersStateService: UsersStateService,
       protected _transactionsApiService: TransactionsApiService,
       protected _profileStateService: ProfileStateService,
@@ -108,8 +98,8 @@ export class UsersOutletComponent implements OnInit {
         if (!currentUser) throw new Error(ErrorMessageConstants.UserNotFound);
         const transactionsInfo = this.currentUserTransactionsInfo$.getValue();
         const lastTransactionInTransactionsInfo = transactionsInfo[transactionsInfo.length - 1];
-        const date = new Date(lastTransactionInTransactionsInfo.createdAt);
-        const getTransactionsByUserId$ = this._transactionsApiService.getTransactionsByUserId(currentUser.id, date, 15);
+        if (!lastTransactionInTransactionsInfo) return;
+        const getTransactionsByUserId$ = this._transactionsApiService.getTransactionsByUserId(currentUser.id, lastTransactionInTransactionsInfo.createdAt, 15, lastTransactionInTransactionsInfo.id);
         const transactions = await firstValueFrom(getTransactionsByUserId$);
         const currentUserTransactionsInfo = this.currentUserTransactionsInfo$.getValue();
         currentUserTransactionsInfo.push(...transactions.response);
@@ -118,18 +108,24 @@ export class UsersOutletComponent implements OnInit {
   }
 
   //events
-  public async onChangeSuspendOrMakeActiveHandler(user: IUserDto) {
-    if (user.userStatus.toString() === UserStatus.Suspended.toString()) {
-      const suspendUser$ = this._usersApiService.suspend(user.id);
-      await firstValueFrom(suspendUser$);
-      return;
+  protected async setUserStatus(user: IUserDto, status: UserStatus) {
+    if (user.userStatus === status || this.changingStatus().has(user.id)) return;
+    this.changingStatus.update(ids => new Set(ids).add(user.id));
+    try {
+      const request = status === UserStatus.Suspended
+        ? this._usersApiService.suspend(user.id)
+        : this._usersApiService.notSuspend(user.id);
+      await firstValueFrom(request);
+      user.userStatus = status;
+    } catch {
+      this.notifications.add({severity: 'error', summary: 'Error', detail: 'Could not change the user status.'});
+    } finally {
+      this.changingStatus.update(ids => new Set([...ids].filter(id => id !== user.id)));
     }
-
-    const notSuspendUser$ = this._usersApiService.notSuspend(user.id);
-    await firstValueFrom(notSuspendUser$);
   }
 
   public async onClickGetUserTransactionsInfoHandler(userId: string) {
+    this.previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     this.showUserInfoWindow = true;
     let user = this._usersStateService.users$.getValue().find(x => x.id === userId);
     if (!user) {
@@ -156,10 +152,14 @@ export class UsersOutletComponent implements OnInit {
     this.showUserInfoWindow = false;
     this.currentUserInfo$.next(null);
     this.currentUserTransactionsInfo$.next([]);
+    this.previousFocus?.focus();
+    this.previousFocus = null;
   }
 
-  public setSelectedTransactionForContextMenu(transaction: ITransactionDto) {
-    this.selectedTransactionForContextMenu = transaction;
+  public async rollbackTransaction(transactionId: string) {
+    await firstValueFrom(this._transactionsApiService.rollBackTransaction(transactionId));
+    this.currentUserTransactionsInfo$.next(this.currentUserTransactionsInfo$.value.map(transaction =>
+      transaction.id === transactionId ? {...transaction, transactionState: TransactionState.RolledBack} : transaction));
   }
 
   //common
@@ -170,13 +170,5 @@ export class UsersOutletComponent implements OnInit {
     return 'userInfoWindowBodyTransactionFromMe'
   }
 
-  //other
-  identifyUserDto(index: number, item: IUserDto){
-    return item.id;
-  }
 
-  hideAllContextMenu() {
-    const r = this.ch.toArray()
-    r.map(x => x.hide());
-  }
 }

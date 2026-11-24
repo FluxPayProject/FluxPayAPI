@@ -1,17 +1,16 @@
-import { SkeletonModule } from 'primeng/skeleton';
+import { NotificationService } from '../../services/common/notification.service';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {animate, style, transition, trigger} from "@angular/animations";
 import {TicketStateService} from "../../services/state/ticket-state.service";
-import {ISupportTicketDto} from "../../types/interfaces/consumer/ISupportTicketDto";
-import {debounceTime, firstValueFrom, fromEvent, Subscription} from "rxjs";
+import {debounceTime, filter, firstValueFrom, fromEvent, Subscription} from "rxjs";
 import {TransactionsApiService} from "../../services/api/transactions-api.service";
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, AngularSvgIconModule, SkeletonModule],
+  imports: [CommonModule, FormsModule, AngularSvgIconModule],
   selector: 'app-tickets-outlet',
   templateUrl: './tickets-outlet.component.html',
   styleUrls: ['./tickets-outlet.component.scss'],
@@ -42,10 +41,12 @@ import {TransactionsApiService} from "../../services/api/transactions-api.servic
 })
 export class TicketsOutletComponent implements OnInit, OnDestroy {
   //common
-  public rollBackedTransactionIds: string[] = [];
+  protected readonly rollbackRequests = signal<ReadonlySet<string>>(new Set());
+  protected readonly pendingRollbacks = signal<ReadonlySet<string>>(new Set());
 
   //state
   public ticketListLoaderAnimation = false;
+  protected readonly resolvingTickets = signal<ReadonlySet<string>>(new Set());
 
   //observable
   public tickets$ = this._ticketStateService.tickets$;
@@ -53,25 +54,35 @@ export class TicketsOutletComponent implements OnInit, OnDestroy {
 
   constructor(
     protected _ticketStateService: TicketStateService,
-    private _transactionApiService: TransactionsApiService
+    private _transactionApiService: TransactionsApiService,
+    private _messageService: NotificationService
   ) {}
 
-  async ngOnInit() {
+  ngOnInit() {
     const date = new Date();
-    if (this.tickets$.getValue().length === 0) await this._ticketStateService.getTicketsAsync(date, 10);
+    if (this.tickets$.getValue().length === 0) {
+      void this._ticketStateService.getTicketsAsync(date, 10).catch(() => {
+        this._messageService.add({severity: 'error', summary: 'Error', detail: 'Could not load tickets.'});
+      });
+    }
 
-    this.documentScrollSub$ = fromEvent(document, "scroll")
+    this.documentScrollSub$ = fromEvent<Event>(document, "scroll", {capture: true})
       .pipe(
+        filter(event => event.target instanceof HTMLElement && event.target.tagName === 'APP-MAIN'),
         debounceTime(400))
       .subscribe(async e => {
-        const event = e as Event;
-        const target = event.target as Document;
-        if (target.body.scrollHeight - window.innerHeight <= window.scrollY + 15) {
-          this.ticketListLoaderAnimation = true;
-          const tickets = this._ticketStateService.tickets$.getValue();
-          const lastTicket = tickets[tickets.length - 1];
-          const date = new Date(lastTicket.createdAt);
-          await this._ticketStateService.getTicketsAsync(date, 10);
+        const target = e.target as HTMLElement;
+        const distanceFromEnd = target.scrollHeight - target.clientHeight - target.scrollTop;
+        if (this.ticketListLoaderAnimation || distanceFromEnd > 15) return;
+        const lastTicket = this.tickets$.getValue().at(-1);
+        if (!lastTicket) return;
+
+        this.ticketListLoaderAnimation = true;
+        try {
+          await this._ticketStateService.getTicketsAsync(lastTicket.createdAt, 10, lastTicket.id);
+        } catch {
+          this._messageService.add({severity: 'error', summary: 'Error', detail: 'Could not load more tickets.'});
+        } finally {
           this.ticketListLoaderAnimation = false;
         }
       });
@@ -83,22 +94,34 @@ export class TicketsOutletComponent implements OnInit, OnDestroy {
 
   //events
   async onClickResolveTicketHandler(ticketId: string, ticketJustification: string) {
-    await this._ticketStateService.resolveTicketAsync(ticketId, ticketJustification);
+    if (this.resolvingTickets().has(ticketId)) return;
+    if (!ticketJustification?.trim()) {
+      this._messageService.add({severity: 'error', summary: 'Error', detail: 'Enter a reply before resolving the ticket.'});
+      return;
+    }
+
+    this.resolvingTickets.update(ids => new Set(ids).add(ticketId));
+    try {
+      await this._ticketStateService.resolveTicketAsync(ticketId, ticketJustification);
+    } catch {
+      this._messageService.add({severity: 'error', summary: 'Error', detail: 'Could not resolve the ticket.'});
+    } finally {
+      this.resolvingTickets.update(ids => new Set([...ids].filter(id => id !== ticketId)));
+    }
   }
 
   async onClickRollBackHandler(transactionId: string) {
-    this.rollBackedTransactionIds.push(transactionId);
-    const rollBackTransaction$ = this._transactionApiService.rollBackTransaction(transactionId);
-    await firstValueFrom(rollBackTransaction$);
+    if (this.pendingRollbacks().has(transactionId) || this.rollbackRequests().has(transactionId)) return;
+
+    this.pendingRollbacks.update(ids => new Set(ids).add(transactionId));
+    try {
+      await firstValueFrom(this._transactionApiService.rollBackTransaction(transactionId));
+      this.rollbackRequests.update(ids => new Set(ids).add(transactionId));
+    } catch {
+      this._messageService.add({severity: 'error', summary: 'Error', detail: 'Could not request a rollback.'});
+    } finally {
+      this.pendingRollbacks.update(ids => new Set([...ids].filter(id => id !== transactionId)));
+    }
   }
 
-  //common
-  isTransactionRollBacked(transactionId: string) {
-    return this.rollBackedTransactionIds.includes(transactionId);
-  }
-
-  //other
-  identifyTicketDto(index: number, item: ISupportTicketDto){
-    return item.id;
-  }
 }

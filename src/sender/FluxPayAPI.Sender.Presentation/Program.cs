@@ -5,6 +5,7 @@ using FluxPayAPI.Sender.Persistence;
 using FluxPayAPI.Sender.Presentation.DependencyInjection;
 using FluxPayAPI.Sender.Presentation.Filters;
 using FluxPayAPI.Sender.Presentation.Routing;
+using FluxPayAPI.Shared.Application.Extensions;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -30,7 +31,7 @@ builder.Services.AddControllers(o =>
     o.Conventions.Add(new RouteTokenTransformerConvention(new CustomParameterTransformer()));
 });
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwagger();
+builder.Services.AddFluxPaySwagger("FluxPay Sender API");
 builder.Services.AddDbContext<DatabaseContext>(options =>
 {
     options.UseNpgsql(databaseConnectionString);
@@ -49,6 +50,12 @@ var rabbitPassword = builder.Configuration[AppSettingsConstants.RabbitMqPassword
 
 builder.Services.AddMassTransit(config =>
 {
+    config.AddEntityFrameworkOutbox<DatabaseContext>(outbox =>
+    {
+        outbox.UsePostgres();
+        outbox.UseBusOutbox();
+    });
+
     config.UsingRabbitMq((ctx, cfg) =>
     {
         cfg.Host(rabbitHost, h =>

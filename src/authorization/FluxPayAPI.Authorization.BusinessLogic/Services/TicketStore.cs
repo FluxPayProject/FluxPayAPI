@@ -107,6 +107,7 @@ public class TicketStore : ITicketStore
             deserializedTicket.Properties.UpdateTokenValue(TokenTypes.AccessToken, accessToken);
             deserializedTicket.Properties.UpdateTokenValue(TokenTypes.RefreshToken, refreshToken);
             deserializedTicket.Properties.UpdateTokenValue(TokenTypes.IdentityToken, idToken);
+            deserializedTicket.Properties.ExpiresUtc = ticketExpiresUtc;
 
             var serializedTicket = _ticketSerializer.Serialize(deserializedTicket);
 
@@ -195,6 +196,11 @@ public class TicketStore : ITicketStore
         }
 
         var refreshToken = deserializedTicket.Properties.GetTokenValue(TokenTypes.RefreshToken);
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            await RemoveAsync(key);
+            return;
+        }
 
         var response = await RequestRefreshTokenAsync(refreshToken);
 
@@ -218,6 +224,7 @@ public class TicketStore : ITicketStore
 
         context.UserSessions.Update(userSession);
         await context.SaveChangesAsync();
+        _memoryCache.Remove(key);
     }
 
     public async Task<AuthenticationTicket> RetrieveAsync(string key)
@@ -227,10 +234,12 @@ public class TicketStore : ITicketStore
 
         var isMemoryCacheTicketExist = _memoryCache.TryGetValue(key, out AuthenticationTicket memoryCacheTicket);
 
-        if (isMemoryCacheTicketExist)
+        if (isMemoryCacheTicketExist && memoryCacheTicket.Properties.ExpiresUtc > DateTimeOffset.UtcNow)
         {
             return memoryCacheTicket;
         }
+
+        _memoryCache.Remove(key);
 
         var userSession = await context.UserSessions.FirstOrDefaultAsync(x => x.Id == new Guid(key));
 
@@ -250,9 +259,10 @@ public class TicketStore : ITicketStore
         {
             var refreshToken = deserializedTicket.Properties.GetTokenValue(TokenTypes.RefreshToken);
 
-            if (refreshToken == null)
+            if (string.IsNullOrWhiteSpace(refreshToken))
             {
-                throw new StoreException("Refresh token does not exist");
+                await RemoveAsync(key);
+                return null;
             }
 
             var response = await RequestRefreshTokenAsync(refreshToken);
@@ -288,6 +298,7 @@ public class TicketStore : ITicketStore
 
     public async Task RemoveAsync(string key)
     {
+        _memoryCache.Remove(key);
         using var scope = _serviceScopeFactory.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 

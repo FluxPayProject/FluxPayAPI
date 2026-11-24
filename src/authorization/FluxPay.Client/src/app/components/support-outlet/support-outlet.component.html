@@ -1,60 +1,54 @@
-<div class="supportInfo">
-  <div class="supportInfoContainer">
-    <span class="titleSpan">
-      <p class="title">Support</p>
-      <svg-icon src="../../../assets/svg/support.svg" class="titleSupportSvg" />
-    </span>
-    <p class="overview">An overview of support</p>
-    <ng-container *ngIf="supportTickets$ | async as supportTickets">
-      <div class="ticketList" *ngIf="supportTickets.length > 0" [@supportTicketListAnimation]="">
-        <div class="ticketItem" *ngFor="let ticket of supportTickets; trackBy: identifySupportTicketDto" [@supportTicketItemAnimation]="">
-          <p class="ticketItemTransactionId">
-            Transaction Id: {{ticket.transactionId}}
-          </p>
-          <p class="ticketItemStatus">
-            Status: {{ticket.ticketStatus === 1 ? 'Open' : 'Resolved'}}
-          </p>
-          <p class="ticketItemDescriptionTitle">
-            Description
-          </p>
-          <p class="ticketItemDescriptionText">
-            {{ticket.ticketReason}}
-          </p>
-          <ng-container *ngIf="ticket.ticketJustification">
-            <p class="ticketItemResponseTitle">
-              Response
-            </p>
-            <p class="ticketItemResponseText">
-              {{ticket.ticketJustification}}
-            </p>
-          </ng-container>
-        </div>
-        <div class="ticketListLoaderBackground" [@ticketListLoaderAnimation]="" *ngIf="ticketListLoaderAnimation">
-          <span class="ticketListLoader"></span>
-        </div>
+<div class="ticketPage">
+  <h1>Support</h1>
+  <div class="ticketLayout">
+    <section class="ticketList" aria-labelledby="support-list">
+      <h2 id="support-list" class="listLabel">Your tickets</h2>
+      @if (supportTickets$ | async; as supportTickets) {
+        @if (supportTickets.length) {
+          <div class="ticketList" [@supportTicketListAnimation]="">
+            @for (ticket of supportTickets; track ticket.id) {
+              <article class="ticketItem" [@supportTicketItemAnimation]="">
+                <div class="ticketHeader">
+                  <p class="ticketReference"><span>Transaction ID</span>{{ticket.transactionId}}</p>
+                  <p class="ticketStatus" [class.resolved]="ticket.ticketStatus !== 1">{{ticket.ticketStatus === 1 ? 'Open' : 'Resolved'}}</p>
+                </div>
+                <div class="ticketDetail">
+                  <h3>Description</h3>
+                  <p>{{ticket.ticketReason}}</p>
+                </div>
+                @if (ticket.ticketJustification) {
+                  <div class="ticketDetail ticketResponse">
+                    <h3>Response</h3>
+                    <p>{{ticket.ticketJustification}}</p>
+                  </div>
+                }
+              </article>
+            }
+          </div>
+        } @else if (_supportTicketStateService.wasRequested) {
+          <p class="listStatus">You have no support tickets yet.</p>
+        }
+      }
+      @if (!_supportTicketStateService.wasRequested) {
+        <span class="skeleton ticketLoading" aria-hidden="true"></span>
+      }
+      @if (ticketListLoaderAnimation) {
+        <p class="listStatus" role="status" [@ticketListLoaderAnimation]="">Loading more tickets…</p>
+      }
+    </section>
+    <form class="ticketComposer" [@rightBarAnimation]="" (ngSubmit)="onClickOpenSupportTicketHandler()">
+      <h2>New support ticket</h2>
+      <div class="ticketField">
+        <label for="support-transaction-id">Transaction ID</label>
+        <input id="support-transaction-id" name="transactionId" placeholder="Enter transaction ID" [(ngModel)]="transactionId">
       </div>
-    </ng-container>
-    <div class="ticketList" *ngIf="!_supportTicketStateService.wasRequested">
-      <p-skeleton class="skeletonSupportTicketItem" />
-      <p-skeleton class="skeletonSupportTicketItem" />
-      <p-skeleton class="skeletonSupportTicketItem" />
-      <p-skeleton class="skeletonSupportTicketItem" />
-    </div>
-  </div>
-</div>
-<div class="createTicket">
-  <div class="createTicketContainer">
-    <div [@rightBarAnimation]="">
-      <p class="createTicketTitle">
-        Create Ticket
-      </p>
-      <input aria-label="Transaction ID" type="text" class="createTicketInput" placeholder="Transaction Id" (keydown.enter)="$event.preventDefault()"
-             [(ngModel)]="transactionId" (keyup.enter)="onClickOpenSupportTicketHandler()" />
-      <textarea aria-label="Ticket reason" class="createTicketTextarea" placeholder="Reason of ticket" (keydown.enter)="$event.preventDefault()"
-                [(ngModel)]="ticketReason" (keyup.enter)="onClickOpenSupportTicketHandler()"></textarea>
-      <button class="createTicketOkButton" (click)="onClickOpenSupportTicketHandler()">
-        Ok
+      <div class="ticketField">
+        <label for="support-reason">Describe the issue</label>
+        <textarea id="support-reason" name="ticketReason" placeholder="What happened?" [(ngModel)]="ticketReason"></textarea>
+      </div>
+      <button class="ticketButton" type="submit" [disabled]="submittingTicket()">
+        {{submittingTicket() ? 'Submitting' : 'Submit ticket'}}
       </button>
-    </div>
+    </form>
   </div>
 </div>

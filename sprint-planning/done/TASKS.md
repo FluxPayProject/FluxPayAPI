@@ -123,7 +123,7 @@ No Cloudflare Terraform root exists in the current repository.
 - [x] Recover the shared Azure state after confirmed manual deletion, preserving a protected backup, and recreate Docker Hub, ACR and Azure service connections through Terraform (2026-10-26: three creations, no changes or deletions).
 - [x] Supply a GitHub PAT, recreate the four enabled service connections in an approved test window, verify repository checkout, CI/PR triggers and status reporting, registry authentication, Azure authentication and pipeline authorizations, then confirm a second plan reports no changes. Test SonarCloud separately when enabled with a working token.
 
-Setup and permissions: [Azure DevOps README](../terraform/azure-devops/variable-groups/README.md).
+Setup and permissions: [Azure DevOps README](../terraform/azure-devops/README.md).
 Azure infrastructure provisioning/RBAC validation is outside this task's scope.
 
 ## TASK-09 — Complete Docker Hub image migration (done)

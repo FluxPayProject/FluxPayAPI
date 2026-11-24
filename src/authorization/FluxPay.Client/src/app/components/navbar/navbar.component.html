@@ -1,61 +1,70 @@
 
-<div class="navBarContainer">
-  <p class="title">Menu</p>
+<nav class="navBarContainer" aria-label="Main navigation">
   <ng-container *ngIf="user$ | async as user; else noUser">
-    <a routerLink="/transactions" class="item" routerLinkActive="itemActive" [@navbarLinkAnimation]="">
-      <div class="itemIcon">
+    <a routerLink="/transactions" class="item" routerLinkActive="itemActive" ariaCurrentWhenActive="page" [@navbarLinkAnimation]="">
+      <div class="itemIcon" aria-hidden="true">
         <svg-icon src="../../../assets/svg/transaction.svg" class="transactionSvg" />
       </div>
       <p class="itemTitle">Transactions</p>
     </a>
-    <a routerLink="/cards" class="item" routerLinkActive="itemActive" [@navbarLinkAnimation]="">
-      <div class="itemIcon">
+    <a routerLink="/cards" class="item" routerLinkActive="itemActive" ariaCurrentWhenActive="page" [@navbarLinkAnimation]="">
+      <div class="itemIcon" aria-hidden="true">
         <svg-icon src="../../../assets/svg/credit-card.svg" class="cardSvg" />
       </div>
       <p class="itemTitle">Cards</p>
     </a>
-    <a routerLink="/deposit" class="item" routerLinkActive="itemActive" [@navbarLinkAnimation]="">
-      <div class="itemIcon">
-        <svg-icon src="../../../assets/svg/money.svg" class="depostionSvg" />
+    <a routerLink="/deposit" class="item" routerLinkActive="itemActive" ariaCurrentWhenActive="page" [@navbarLinkAnimation]="">
+      <div class="itemIcon" aria-hidden="true">
+        <svg-icon src="../../../assets/svg/money.svg" class="depositSvg" />
       </div>
       <p class="itemTitle">Deposit</p>
     </a>
-    <a routerLink="/contacts" class="item" routerLinkActive="itemActive" [@navbarLinkAnimation]="">
-      <div class="itemIcon">
+    <a routerLink="/contacts" class="item" routerLinkActive="itemActive" ariaCurrentWhenActive="page" [@navbarLinkAnimation]="">
+      <div class="itemIcon" aria-hidden="true">
         <svg-icon src="../../../assets/svg/contacts.svg" class="contactsSvg" />
       </div>
       <p class="itemTitle">Contacts</p>
     </a>
-    <a routerLink="/support" class="item" routerLinkActive="itemActive" [@navbarLinkAnimation]="">
-      <div class="itemIcon">
+    <a routerLink="/support" class="item" routerLinkActive="itemActive" ariaCurrentWhenActive="page" [@navbarLinkAnimation]="">
+      <div class="itemIcon" aria-hidden="true">
         <svg-icon src="../../../assets/svg/support.svg" class="supportSvg" />
       </div>
       <p class="itemTitle">Support</p>
     </a>
-    <a routerLink="/tickets" class="item" routerLinkActive="itemActive" *ngIf="user.userRole === UserRole.Admin" [@navbarLinkAnimation]="">
-      <div class="itemIcon">
+    <a routerLink="/tickets" class="item" routerLinkActive="itemActive" ariaCurrentWhenActive="page" *ngIf="user.userRole === UserRole.Admin" [@navbarLinkAnimation]="">
+      <div class="itemIcon" aria-hidden="true">
         <svg-icon src="../../../assets/svg/ticket.svg" class="ticketSvg" />
       </div>
       <p class="itemTitle">Tickets</p>
     </a>
-    <a routerLink="/users" class="item" routerLinkActive="itemActive" *ngIf="user.userRole === UserRole.Admin"  [@navbarLinkAnimation]="">
-      <div class="itemIcon">
-        <svg-icon src="../../../assets/svg/user.svg" class="ticketSvg" />
+    <a routerLink="/users" class="item" routerLinkActive="itemActive" ariaCurrentWhenActive="page" *ngIf="user.userRole === UserRole.Admin"  [@navbarLinkAnimation]="">
+      <div class="itemIcon" aria-hidden="true">
+        <svg-icon src="../../../assets/svg/user.svg" class="usersSvg" />
       </div>
       <p class="itemTitle">Users</p>
     </a>
-    <a class="item" (click)="getLogout()"  [@navbarLinkAnimation]="">
-      <div class="itemIcon">
+    <button type="button" class="item logoutButton" (click)="logoutDialog.showModal()" [@navbarLinkAnimation]="">
+      <div class="itemIcon" aria-hidden="true">
         <svg-icon src="../../../assets/svg/logout.svg" class="logoutSvg" />
       </div>
-      <p class="itemTitle">Log out</p>
-    </a>
+      <span class="itemTitle">Log out</span>
+    </button>
   </ng-container>
   <ng-template #noUser>
-    <p-skeleton class="skeletonNavLink" />
-    <p-skeleton class="skeletonNavLink" />
-    <p-skeleton class="skeletonNavLink" />
-    <p-skeleton class="skeletonNavLink" />
-    <p-skeleton class="skeletonNavLink" />
+    <span class="skeleton skeletonNavLink" aria-hidden="true"></span>
+    <span class="skeleton skeletonNavLink" aria-hidden="true"></span>
+    <span class="skeleton skeletonNavLink" aria-hidden="true"></span>
+    <span class="skeleton skeletonNavLink" aria-hidden="true"></span>
+    <span class="skeleton skeletonNavLink" aria-hidden="true"></span>
   </ng-template>
-</div>
+</nav>
+
+
+<dialog #logoutDialog class="confirmationDialog" aria-labelledby="logout-title" aria-describedby="logout-description">
+  <h2 id="logout-title">Log out?</h2>
+  <p id="logout-description">Are you sure you want to log out of FluxPay?</p>
+  <div class="confirmationActions">
+    <button type="button" autofocus (click)="logoutDialog.close()">Cancel</button>
+    <button type="button" class="confirmationDanger" (click)="getLogout()">Log out</button>
+  </div>
+</dialog>

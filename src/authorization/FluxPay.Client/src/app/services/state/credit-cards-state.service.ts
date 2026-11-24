@@ -11,6 +11,8 @@ import {ICreditCardDto} from "../../types/interfaces/consumer/ICreditCardDto";
 })
 export class CreditCardsStateService {
   public wereCardsRequested = false;
+  private pendingDeletions = new Set<string>();
+  private rejectedDeletions = new Set<string>();
 
   public cards$: BehaviorSubject<ICreditCardDto[]> = new BehaviorSubject<ICreditCardDto[]>([]);
 
@@ -27,11 +29,10 @@ export class CreditCardsStateService {
 
   //requests
   public async getCreditCardsAsync() {
+    this.wereCardsRequested = true;
     const getCreditCardsSub$ = this._creditCardApiService.getCreditCards();
     const getCreditCardsResult = await firstValueFrom<IResult<ICreditCardDto[]>>(getCreditCardsSub$);
     this.cards$.next(getCreditCardsResult.response);
-
-    this.wereCardsRequested = true;
 
     return getCreditCardsResult;
   }
@@ -49,11 +50,22 @@ export class CreditCardsStateService {
   }
 
   public async deleteCreditCardAsync(creditCardId: string) {
-    const deleteCreditCard$ = this._creditCardApiService.deleteCreditCard(creditCardId);
+    if (this.pendingDeletions.has(creditCardId)) return;
+    this.pendingDeletions.add(creditCardId);
+    try {
+      const result = await firstValueFrom(this._creditCardApiService.deleteCreditCard(creditCardId));
+      if (!this.rejectedDeletions.has(creditCardId)) {
+        this.cards$.next(this.cards$.getValue().filter(x => x.id !== creditCardId));
+      }
+      return result;
+    } finally {
+      this.pendingDeletions.delete(creditCardId);
+      this.rejectedDeletions.delete(creditCardId);
+    }
+  }
 
-    const cards = this.cards$.getValue().filter(x => x.id !== creditCardId);
-    this.cards$.next(cards);
-
-    return await firstValueFrom(deleteCreditCard$);
+  public async reconcileRejectedDeletion(creditCardId: string) {
+    if (this.pendingDeletions.has(creditCardId)) this.rejectedDeletions.add(creditCardId);
+    await this.getCreditCardsAsync();
   }
 }

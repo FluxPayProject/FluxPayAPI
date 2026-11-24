@@ -5,6 +5,7 @@ using FluxPayAPI.Consumer.Domain.Constants;
 using FluxPayAPI.Consumer.Persistence;
 using FluxPayAPI.Consumer.Presentation.DependencyInjection;
 using FluxPayAPI.Consumer.Presentation.Routing;
+using FluxPayAPI.Shared.Application.Extensions;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -24,7 +25,7 @@ builder.Services.AddControllers(o =>
 });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwagger();
+builder.Services.AddFluxPaySwagger("FluxPay Consumer API");
 builder.Services.AddSignalR();
 builder.Services.AddDbContext<DatabaseContext>(options =>
 {
@@ -64,6 +65,8 @@ var rabbitPassword = builder.Configuration[AppSettingsConstants.RabbitMqPassword
 builder.Services.AddMassTransit(config =>
 {
     config.AddConsumer<EventConsumer>();
+    config.AddConsumer<NotificationConsumer>();
+    config.AddEntityFrameworkOutbox<DatabaseContext>(outbox => outbox.UsePostgres());
     
     config.UsingRabbitMq((ctx, cfg) =>
     {
@@ -77,7 +80,14 @@ builder.Services.AddMassTransit(config =>
         {
             c.PrefetchCount = 1;
             c.UseConcurrencyLimit(1);
+            c.UseEntityFrameworkOutbox<DatabaseContext>(ctx);
             c.ConfigureConsumer<EventConsumer>(ctx);
+        });
+
+        cfg.ReceiveEndpoint("notification-queue", c =>
+        {
+            c.UseMessageRetry(retry => retry.Interval(3, TimeSpan.FromSeconds(1)));
+            c.ConfigureConsumer<NotificationConsumer>(ctx);
         });
     });
 });

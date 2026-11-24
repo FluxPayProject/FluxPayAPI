@@ -27,21 +27,13 @@ public class GetTransactionsBySearchQueryHandler : ICommandHandler<GetTransactio
             return new Result<List<TransactionDto>>(new DbEntityNotFoundError(ResponseMessages.RequesterNotFound));
         }
 
+        var searchText = command.SearchText.ToLowerInvariant();
         var transactions = await _context.TransactionEntities
-            .OrderByDescending(x => x.CreatedAt)
             .Where(x => x.FromUserId == command.RequesterId || x.ToUserId == command.RequesterId)
-            .Where(x => x.CreatedAt < command.FromDateTime)
-            .Where(x => EF.Functions.Like(x.Id.ToString(), $"%{command.SearchText}%"))
+            .Where(x => x.Id.ToString().Contains(searchText))
+            .Before(command.FromDateTime, command.CursorId)
             .Take(command.Limit)
-            .Select(x => new TransactionDto(
-                x.Id,
-                x.FromUserId,
-                x.ToUserId,
-                x.Amount,
-                x.TransactionState,
-                x.TransactionType,
-                x.CreatedAt)
-            )
+            .ToDto()
             .ToListAsync();
 
         return new Result<List<TransactionDto>>(transactions);

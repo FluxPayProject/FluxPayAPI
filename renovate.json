@@ -6,7 +6,7 @@
   "packageRules": [
     {
       "matchManagers": ["npm"],
-      "matchPackageNames": ["/^@angular\\//", "/^@angular-devkit\\//", "primeng", "ngx-mask", "angular-svg-icon", "typescript", "zone.js", "@primeuix/themes"],
+      "matchPackageNames": ["/^@angular\\//", "/^@angular-devkit\\//", "ngx-mask", "angular-svg-icon", "typescript", "zone.js"],
       "groupName": "Angular and UI dependencies"
     }
   ]

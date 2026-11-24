@@ -45,7 +45,7 @@ the dependency lock-file change.
 ## One-click deployment
 
 Register **Deploy FluxPay Dev** using the
-[Azure DevOps Terraform root](../azure-devops/variable-groups). The pipeline
+[Azure DevOps Terraform root](../azure-devops). The pipeline
 uses the existing Azure state storage, ACR, Cloudflare zone and GitOps
 repository. Terraform uses the existing `Terraform_Azure_Credentials` group,
 as in Terraform Create and Terraform Destroy. The `FluxPay` GitHub connection

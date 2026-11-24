@@ -59,4 +59,4 @@ GitOps commit if a push races with another run.
    release needs to be rolled back, revert its GitOps commit to restore the
    previous chart and image pins together.
 
-For a fresh AKS deployment, use [Deploy FluxPay Dev](../../infrastructure/README.md#one-click-deployment).
+For a fresh AKS deployment, use [Deploy FluxPay Dev](../infrastructure/README.md#one-click-deployment).

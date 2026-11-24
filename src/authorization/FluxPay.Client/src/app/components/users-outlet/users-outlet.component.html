@@ -1,99 +1,79 @@
 <div class="userInfoWindowBackground" *ngIf="showUserInfoWindow" (click)="closeUserTransactionsInfo()">
-  <div class="userInfoWindow" *ngIf="(currentUserInfo$ | async) as currentUserInfo" (click)="hideAllContextMenu(); $event.stopPropagation()">
+  <div class="userInfoWindow" role="dialog" aria-modal="true" aria-label="User transactions" cdkTrapFocus *ngIf="(currentUserInfo$ | async) as currentUserInfo" (click)="$event.stopPropagation()">
     <div class="userInfoWindowHeader">
-      <div class="userInfoWindowHeaderAvatar"></div>
+      <app-avatar class="userInfoWindowHeaderAvatar" [name]="_textService.pullUsernameFromMail(currentUserInfo.email)" />
       <p class="userInfoWindowHeaderUsername">{{_textService.pullUsernameFromMail(currentUserInfo.email)}}</p>
       <p class="userInfoWindowHeaderBalance">€{{currentUserInfo.wallet.balance}}</p>
+      <button #closeUserInfoButton type="button" class="userInfoWindowClose" aria-label="Close user transactions" (click)="closeUserTransactionsInfo()">×</button>
     </div>
     <div class="userInfoWindowBody" *ngIf="(currentUserTransactionsInfo$ | async) as currentUserTransactionsInfo"
          (scroll)="onScrollTransactionInfoHandler($event)">
-      <span class="userInfoWindowBodyLoader" *ngIf="currentUserTransactionsInfoLoader"></span>
-      <div #transactionItem class="{{getTransactionClassName(currentUserInfo.id, transaction)}}"
+      <p class="usersEmpty" role="status" *ngIf="currentUserTransactionsInfoLoader">Loading transactions…</p>
+      <p class="usersEmpty" *ngIf="!currentUserTransactionsInfoLoader && !currentUserTransactionsInfo.length">No transactions yet.</p>
+      <div [cdkContextMenuTriggerFor]="transactionMenu" class="userTransaction {{getTransactionClassName(currentUserInfo.id, transaction)}}"
            *ngFor="let transaction of currentUserTransactionsInfo">
         <div class="transactionSvgContainer">
-          <svg-icon src="../../../assets/svg/transaction.svg" appCopyText="{{transaction.id}}" pTooltip="{{transaction.id}}" class="transactionSvg" />
+          <svg-icon src="../../../assets/svg/transaction.svg" appCopyText="{{transaction.id}}" copyLabel="Copy transaction ID" class="transactionSvg" />
         </div>
-        <p class="userInfoWindowBodyTransactionFrom" appCopyText="{{transaction.fromUserId}}" pTooltip="{{transaction.fromUserId}}">
+        <p class="userInfoWindowBodyTransactionFrom" appCopyText="{{transaction.fromUserId}}" copyLabel="Copy sender ID">
           From: {{transaction.fromUserId}}
         </p>
-        <p class="userInfoWindowBodyTransactionTo" appCopyText="{{transaction.toUserId}}" pTooltip="{{transaction.toUserId}}">
+        <p class="userInfoWindowBodyTransactionTo" appCopyText="{{transaction.toUserId}}" copyLabel="Copy recipient ID">
           To: {{transaction.toUserId}}
         </p>
         <p class="userInfoWindowBodyTransactionAmount">€{{transaction.amount}}</p>
         <p class="userInfoWindowBodyTransactionDate">{{_dateService.getTimeAndDate(transaction.createdAt)}}</p>
-        <p-contextmenu #userInfoWindowBodyTransactionContextMenu [target]="transactionItem" (onShow)="setSelectedTransactionForContextMenu(transaction)"
-                       [autoZIndex]="true" [model]="contextMenuItems" appendTo="body">
-        </p-contextmenu>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="usersInfo">
-  <div class="usersInfoContainer">
-    <span class="titleSpan">
-      <p class="title">Users</p>
-      <svg-icon src="../../../assets/svg/user.svg" class="titleUsersSvg" />
-    </span>
-    <p class="overview">An overview of users</p>
-    <div class="search">
-      <input aria-label="Search users" type="text" class="searchInput"
-             [ngModel]="searchText$ | async" (ngModelChange)="searchText$.next($event)" placeholder="Search Users" />
-      <svg-icon src="../../../assets/svg/search.svg" class="searchSvg" />
-    </div>
-    <ng-container *ngIf="{
-      users: (users$ | async) || [],
-      searchedUsers: (searchedUsers$ | async) || [],
-      searchText: (searchText$ | async) || ''
-    } as data">
-      <div class="userList" *ngIf="data.users.length > 0 && data.searchText.length === 0; else noUsers" [@userListAnimation]="">
-        <div *ngFor="let user of data.users; trackBy: identifyUserDto" class="userItem" (click)="onClickGetUserTransactionsInfoHandler(user.id)">
-          <p class="userItemUsername">
-            Username: {{_textService.pullUsernameFromMail(user.email)}}
-          </p>
-          <p class="userItemBalance">
-            Balance: €{{user.wallet.balance}}
-          </p>
-          <p class="userItemRole">
-            Role: {{user.userRole === 0 ? "User" : "Admin"}}
-          </p>
-          <p class="userItemStatus">
-            <span>Status:</span>
-            <select aria-label="User status" class="userItemStatusSelect" [(ngModel)]="user.userStatus" (click)="$event.stopPropagation();" (change)="onChangeSuspendOrMakeActiveHandler(user)">
-              <option value="{{UserStatus.Active}}">Active</option>
-              <option value="{{UserStatus.Suspended}}">Suspended</option>
-            </select>
-          </p>
-        </div>
-      </div>
-      <ng-template #noUsers>
-        <div class="userList" *ngIf="data.searchedUsers.length > 0 && data.searchText.length > 0" [@userListAnimation]="">
-          <div *ngFor="let user of data.searchedUsers; trackBy: identifyUserDto" class="userItem" (click)="onClickGetUserTransactionsInfoHandler(user.id)">
-            <p class="userItemUsername">
-              Username: {{_textService.pullUsernameFromMail(user.email)}}
-            </p>
-            <p class="userItemBalance">
-              Balance: €{{user.wallet.balance}}
-            </p>
-            <p class="userItemRole">
-              Role: {{user.userRole === 0 ? "User" : "Admin"}}
-            </p>
-            <p class="userItemStatus">
-              <span>Status:</span>
-              <select aria-label="User status" class="userItemStatusSelect" [(ngModel)]="user.userStatus" (change)="onChangeSuspendOrMakeActiveHandler(user)">
-                <option value="{{UserStatus.Active}}">Active</option>
-                <option value="{{UserStatus.Suspended}}">Suspended</option>
-              </select>
-            </p>
+        <ng-template #transactionMenu>
+          <div cdkMenu class="fluxpay-context-menu" aria-label="Transaction actions">
+            <button type="button" cdkMenuItem (cdkMenuItemTriggered)="rollbackTransaction(transaction.id)">Rollback</button>
           </div>
-        </div>
-      </ng-template>
-    </ng-container>
-    <div class="userList" *ngIf="!_usersStateService.wasRequested">
-      <p-skeleton class="skeletonUserItem" />
-      <p-skeleton class="skeletonUserItem" />
-      <p-skeleton class="skeletonUserItem" />
-      <p-skeleton class="skeletonUserItem" />
+        </ng-template>
+      </div>
     </div>
   </div>
 </div>
-<div class="emptyBlock"></div>
+<div class="usersPage">
+  <h1>Users</h1>
+  <div class="userSearch">
+    <svg-icon src="../../../assets/svg/search.svg" aria-hidden="true" />
+    <input aria-label="Search users" type="search" [ngModel]="searchText$ | async"
+           (ngModelChange)="searchText$.next($event)" placeholder="Search users" />
+  </div>
+  @let query = (searchText$ | async) ?? '';
+  @let users = (query ? (searchedUsers$ | async) : (users$ | async)) ?? [];
+  <section class="usersDirectory" aria-label="User directory">
+    @if (!_usersStateService.wasRequested) {
+      <span class="skeleton userPlaceholder" aria-hidden="true"></span>
+    } @else if (!users.length) {
+      <p class="usersEmpty">{{ query ? 'No users match your search.' : 'No users found.' }}</p>
+    } @else {
+      <ul class="directoryList" [@userListAnimation]="">
+        @for (user of users; track user.id) {
+          @let name = _textService.pullUsernameFromMail(user.email);
+          <li class="directoryRow">
+            <app-avatar class="directoryAvatar" [name]="name" />
+            <div class="directoryIdentity">
+              <button type="button" class="directoryName" (click)="onClickGetUserTransactionsInfoHandler(user.id)">{{name}}</button>
+              <p>{{user.userRole === 0 ? 'User' : 'Admin'}}</p>
+            </div>
+            <div class="directoryBalance"><span>Balance</span><strong>€{{user.wallet.balance}}</strong></div>
+            <button type="button" class="userStatusTrigger" [class.suspended]="user.userStatus === UserStatus.Suspended"
+                    [cdkMenuTriggerFor]="statusMenu" [disabled]="changingStatus().has(user.id)"
+                    [attr.aria-label]="'Status for ' + name + ': ' + (user.userStatus === UserStatus.Suspended ? 'Suspended' : 'Active')">
+              {{user.userStatus === UserStatus.Suspended ? 'Suspended' : 'Active'}}
+              <span aria-hidden="true"></span>
+            </button>
+            <ng-template #statusMenu>
+              <div cdkMenu class="userStatusMenu" aria-label="User status">
+                <button type="button" cdkMenuItemRadio [cdkMenuItemChecked]="user.userStatus === UserStatus.Active"
+                        (cdkMenuItemTriggered)="setUserStatus(user, UserStatus.Active)">Active</button>
+                <button type="button" cdkMenuItemRadio [cdkMenuItemChecked]="user.userStatus === UserStatus.Suspended"
+                        (cdkMenuItemTriggered)="setUserStatus(user, UserStatus.Suspended)">Suspended</button>
+              </div>
+            </ng-template>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+</div>

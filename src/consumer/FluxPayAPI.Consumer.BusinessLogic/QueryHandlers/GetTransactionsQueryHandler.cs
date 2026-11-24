@@ -28,19 +28,10 @@ public class GetTransactionsQueryHandler : ICommandHandler<GetTransactionsQuery,
         }
 
         var transactions = await _context.TransactionEntities
-            .OrderByDescending(x => x.CreatedAt)
             .Where(x => x.FromUserId == command.RequesterId || x.ToUserId == command.RequesterId)
-            .Where(x => x.CreatedAt < command.FromDateTime)
+            .Before(command.FromDateTime, command.CursorId)
             .Take(command.Limit)
-            .Select(x => new TransactionDto(
-                x.Id,
-                x.FromUserId,
-                x.ToUserId,
-                x.Amount,
-                x.TransactionState,
-                x.TransactionType,
-                x.CreatedAt)
-            )
+            .ToDto()
             .ToListAsync();
 
         return new Result<List<TransactionDto>>(transactions);

@@ -1,175 +1,108 @@
 @use "../../app.component.scss" as *;
 
 :host {
-  position: relative;
-  display: grid;
-  grid-template-areas:
-  "logosvg search username";
-  grid-template-columns: 328px auto 446px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-inline: 35px;
   grid-area: header;
+  background:
+    linear-gradient(90deg, var(--sidebar-border) var(--sidebar-width), #ede4f4 var(--sidebar-width)) bottom / 100% 1px no-repeat,
+    linear-gradient(90deg, var(--sidebar-surface) var(--sidebar-width), #f0e9f8 var(--sidebar-width));
+}
+
+.headerBrand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .logo {
   flex-shrink: 1;
-  position: absolute;
-  top: 30px;
-  left: 35px;
   display: flex;
+  align-items: center;
+  gap: 6px;
   text-decoration: none;
 
+  &:focus-visible { outline: 2px solid #d8adfc; outline-offset: 4px; border-radius: 4px; }
+
   .logoSvg {
-    width: 26px;
-    height: 13px;
-    stroke: $purple;
-    fill: white;
-    margin-top: 3px;
+    width: 24px;
+    height: 24px;
+    color: #f6eaff;
   }
 
   .logoName {
-    padding-top: 1px;
-    margin-left: 5px;
-    font-size: 18px;
+    font-size: 22px;
     font-weight: 700;
-    color: $purple;
-  }
-}
-
-.search {
-  position: relative;
-  display: flex;
-  width: 100%;
-  height: 50px;
-  margin-top: 15px;
-  grid-area: search;
-
-  .searchInput {
-    width: 100%;
-    height: 100%;
-    outline: none;
-    border: none;
-    border-radius: 10px;
-    font-size: 18px;
-    font-weight: 700;
-    background-color: $grey;
-    color: $grey-p;
-
-    &::placeholder {
-      color: $light-grey-p;
-    }
-  }
-
-  .searchSvg {
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    top: 9px;
-    right: 15px;
-    stroke: $light-grey-svg;
+    color: #f6eaff;
   }
 }
 
 .profile {
   display: flex;
-  position: absolute;
-  top: 17px;
-  right: 35px;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  max-width: 260px;
+  color: #2e2339;
 
   .fullName {
-    margin: 12px;
-    font-size: 18px;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 20px;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     user-select: none;
   }
 
   .avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 100%;
-    background-color: $purple;
-  }
-}
-
-::ng-deep {
-  .searchInput {
-    & span {
-      width: 100%
-    }
-
-    & input {
-      width: 100%;
-    }
-  }
-}
-
-@media screen and (max-width: 1880px) {
-  :host {
-    grid-template-columns: 300px auto 380px;
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 17px;
   }
 }
 
 @media screen and (max-width: 1670px) {
   :host {
-    grid-template-columns: 240px auto 300px;
+    padding-inline: 30px;
   }
 
   .logo {
-    top: 23px;
-    left: 30px;
-
     .logoSvg {
       width: 20px;
-      height: 10px;
-      margin-top: -1px;
+      height: 20px;
     }
 
     .logoName {
-      margin-left: 5px;
-      font-size: 14px;
-    }
-  }
-
-  ::ng-deep {
-    .search {
-      &.p-autocomplete {
-        height: 40px;
-        margin-bottom: 10px;
-        border-radius: 8px;
-      }
-
-      & input {
-        height: 40px;
-        font-size: 14px;
-      }
-    }
-  }
-
-  .search {
-    height: 40px;
-    margin-top: 10px;
-
-    .searchSvg {
-      width: 20px;
-      height: 20px;
-      top: 10px;
-      right: 10px;
+      font-size: 18px;
     }
   }
 
   .profile {
-    top: 10px;
-    right: 30px;
+    max-width: 240px;
 
-    .fullName {
-      margin-top: 12px;
-      font-size: 14px;
-    }
+    .fullName { font-size: 16px; }
 
     .avatar {
-      width: 25px;
-      height: 25px;
-      margin-top: 6px;
+      width: 32px;
+      height: 32px;
+      font-size: 14px;
     }
   }
+}
+
+
+@media screen and (max-width: 760px) {
+  :host {
+    padding-inline: 8px var(--page-gutter);
+    border-bottom: 1px solid var(--sidebar-border);
+    background: var(--sidebar-surface);
+  }
+
+  .profile { color: #f6eaff; }
 }
