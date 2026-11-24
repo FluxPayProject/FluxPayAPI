@@ -19,7 +19,7 @@ stages:
                 -backend-config="container_name=$STATE_CONTAINER" \
                 -backend-config="key=$STATE_KEY" \
                 -backend-config="sas_token=$STATE_SAS_TOKEN"
-              terraform apply -input=false -lock-timeout=5m -auto-approve
+              terraform apply -input=false -auto-approve
 
               resource_group=$(terraform output -raw rg_name)
               cluster_name=$(terraform output -raw aks_name)

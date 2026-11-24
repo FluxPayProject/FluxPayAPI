@@ -21,7 +21,7 @@ stages:
                 -backend-config="container_name=$STATE_CONTAINER" \
                 -backend-config="key=cloudflare-dev.tfstate" \
                 -backend-config="sas_token=$STATE_SAS_TOKEN"
-              terraform apply -input=false -lock-timeout=5m -auto-approve -var="traefik_public_ip=$TRAEFIK_PUBLIC_IP"
+              terraform apply -input=false -auto-approve -var="traefik_public_ip=$TRAEFIK_PUBLIC_IP"
             displayName: Configure Cloudflare DNS
             workingDirectory: $(Build.SourcesDirectory)/terraform/cloudflare/environments/dev
             env:
