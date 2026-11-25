@@ -12,7 +12,7 @@ repository `FluxPayProject/FluxPayAPI` and hosted `Azure Pipelines` pool.
 - Terraform Create: `.azdo/infrastructure/terraform-create.yml`
 - FluxCD Ansible: `.azdo/infrastructure/fluxcd-ansible.yml`
 - Terraform Destroy: `.azdo/infrastructure/terraform-destroy.yml`
-- Cloudflare DNS: `.azdo/cloudflare/terraform-dns.yml`
+- Cloudflare DNS: `.azdo/infrastructure/terraform-dns.yml`
 
 Terraform manages names, folders, repository connections and default branches.
 YAML owns CI/PR triggers. `pipeline_default_branch` defaults to `refs/heads/main`;

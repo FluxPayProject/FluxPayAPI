@@ -42,14 +42,21 @@ locals {
       default_branch = "refs/heads/develop"
     }
     terraform_destroy = {
-      name      = "Terraform Destroy"
-      folder    = "\\Infrastructure"
-      yaml_path = ".azdo/infrastructure/terraform-destroy.yml"
+      name           = "Terraform Destroy"
+      folder         = "\\Infrastructure"
+      yaml_path      = ".azdo/infrastructure/terraform-destroy.yml"
+      default_branch = "refs/heads/develop"
+    }
+    cloudflare_drop = {
+      name           = "Cloudflare Drop"
+      folder         = "\\Infrastructure"
+      yaml_path      = ".azdo/infrastructure/cloudflare-drop.yml"
+      default_branch = "refs/heads/develop"
     }
     cloudflare_dns = {
       name           = "Cloudflare DNS"
       folder         = "\\Infrastructure"
-      yaml_path      = ".azdo/cloudflare/terraform-dns.yml"
+      yaml_path      = ".azdo/infrastructure/terraform-dns.yml"
       default_branch = "refs/heads/develop"
     }
   }
@@ -91,6 +98,10 @@ locals {
       variable_group_id = azuredevops_variable_group.terraform_backend_settings.id
       pipeline_key      = "cloudflare_dns"
     }
+    backend_cloudflare_drop = {
+      variable_group_id = azuredevops_variable_group.terraform_backend_settings.id
+      pipeline_key      = "cloudflare_drop"
+    }
     azure_create = {
       variable_group_id = azuredevops_variable_group.terraform_azure_credentials.id
       pipeline_key      = "terraform_create"
@@ -98,6 +109,10 @@ locals {
     azure_destroy = {
       variable_group_id = azuredevops_variable_group.terraform_azure_credentials.id
       pipeline_key      = "terraform_destroy"
+    }
+    cloudflare_drop = {
+      variable_group_id = azuredevops_variable_group.cloudflare_api_key.id
+      pipeline_key      = "cloudflare_drop"
     }
     cloudflare_dns = {
       variable_group_id = azuredevops_variable_group.cloudflare_api_key.id
@@ -201,7 +216,7 @@ resource "azuredevops_pipeline_authorization" "release_variable_group" {
 }
 
 resource "azuredevops_pipeline_authorization" "environment" {
-  for_each = toset(["terraform_create", "terraform_destroy", "cloudflare_dns"])
+  for_each = toset(["terraform_create", "terraform_destroy", "cloudflare_dns", "cloudflare_drop"])
 
   project_id  = var.project_id
   resource_id = azuredevops_environment.dev.id

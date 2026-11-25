@@ -1,0 +1,60 @@
+trigger: none
+pr: none
+
+resources:
+  pipelines:
+    - pipeline: terraformDestroy
+      source: '\Infrastructure\Terraform Destroy'
+      trigger:
+        branches:
+          include:
+            - refs/heads/develop
+        stages:
+          - Terraform_Destroy
+
+variables:
+  - group: Cloudflare_API_Key
+  - group: Terraform_Backend_StateFile_Settings
+  - name: terraformVersion
+    value: '1.16.0'
+  - name: workingDirectory
+    value: '$(System.DefaultWorkingDirectory)/terraform/cloudflare/environments/dev'
+  - name: cloudflareStateFile
+    value: 'cloudflare-dev.tfstate'
+  - name: planStageName
+    value: 'Cloudflare_Plan_Destroy'
+  - name: applyStageName
+    value: 'Cloudflare_Destroy'
+
+stages:
+  - template: ../templates/terraform-plan-stages.yml
+    parameters:
+      stageName: ${{ variables.planStageName }}
+      vmImage: ubuntu-latest
+      terraformVersion: $(terraformVersion)
+      terraformBasePath: $(System.DefaultWorkingDirectory)/terraform/cloudflare
+      workingDirectory: $(workingDirectory)
+      storageAccount: $(library-storage-account)
+      storageContainer: $(library-storage-container)
+      stateFile: $(cloudflareStateFile)
+      sasToken: $(library-sas-token)
+      destroy: true
+      terraformEnvironment:
+        CLOUDFLARE_API_TOKEN: $(cloudflare-api-key)
+
+  - template: ../templates/terraform-apply-stages.yml
+    parameters:
+      stageName: ${{ variables.applyStageName }}
+      vmImage: ubuntu-latest
+      terraformVersion: $(terraformVersion)
+      workingDirectory: $(workingDirectory)
+      storageAccount: $(library-storage-account)
+      storageContainer: $(library-storage-container)
+      stateFile: $(cloudflareStateFile)
+      sasToken: $(library-sas-token)
+      environment: dev
+      dependsOn: [ '${{ variables.planStageName }}' ]
+      condition: ${{ variables.planStageName }}
+      additionalCondition: eq(variables['Build.SourceBranch'], 'refs/heads/develop')
+      terraformEnvironment:
+        CLOUDFLARE_API_TOKEN: $(cloudflare-api-key)
