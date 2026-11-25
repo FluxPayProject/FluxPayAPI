@@ -1,6 +1,6 @@
 # Azure DevOps Terraform
 
-Creates variable groups, nine YAML pipelines, service connections and the `dev`
+Creates variable groups, ten YAML pipelines, service connections and the `dev`
 environment in the existing FluxPay Azure DevOps project.
 
 ## Run locally
@@ -36,6 +36,7 @@ export TF_VAR_azure_client_secret="<Azure service-principal secret>"
 export TF_VAR_cloudflare_api_key="<Cloudflare API key>"
 export TF_VAR_docker_hub_token="<Docker Hub token>"
 export TF_VAR_azure_acr_password="<ACR password>"
+export TF_VAR_ansible_vault_password="<Ansible Vault password>"
 ```
 
 Defaults and optional overrides are in `variables.tf`. `azure_client_id` and

@@ -74,6 +74,10 @@ locals {
   }
 
   variable_group_pipeline_authorizations = {
+    fluxcd_ansible = {
+      variable_group_id = azuredevops_variable_group.fluxcd_ansible_vault.id
+      pipeline_key      = "fluxcd_ansible"
+    }
     backend_create = {
       variable_group_id = azuredevops_variable_group.terraform_backend_settings.id
       pipeline_key      = "terraform_create"

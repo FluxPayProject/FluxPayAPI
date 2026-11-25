@@ -20,8 +20,11 @@ pool:
   vmImage: ubuntu-latest
 
 variables:
-  aksResourceGroup: rg-aks-d01
-  aksClusterName: my-aks-cluster-d01
+  - group: FluxCD_Ansible_Vault
+  - name: aksResourceGroup
+    value: rg-aks-d01
+  - name: aksClusterName
+    value: my-aks-cluster-d01
 
 steps:
   - checkout: fluxBootstrap
@@ -47,7 +50,7 @@ steps:
       workingDirectory: $(Pipeline.Workspace)/s/flux-bootstrap
       inlineScript: |
         set -euo pipefail
-        : "${ANSIBLE_VAULT_PASSWORD:?Set the secret pipeline variable ANSIBLE_VAULT_PASSWORD}"
+        : "${ANSIBLE_VAULT_PASSWORD:?Set ANSIBLE_VAULT_PASSWORD in FluxCD_Ansible_Vault}"
         umask 077
         temp_dir=$(mktemp -d)
         trap 'for file in "$temp_dir/kubeconfig" "$temp_dir/vault-password"; do
