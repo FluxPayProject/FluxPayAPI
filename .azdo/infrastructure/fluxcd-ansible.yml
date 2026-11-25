@@ -13,7 +13,7 @@ resources:
     - repository: fluxBootstrap
       type: github
       name: FluxPayProject/fluxcd-operator-install-ansible
-      endpoint: FluxPay
+      endpoint: FluxCD_Ansible_GitHub
       ref: refs/heads/main
 
 pool:

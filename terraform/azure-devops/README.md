@@ -36,6 +36,7 @@ export TF_VAR_azure_client_secret="<Azure service-principal secret>"
 export TF_VAR_cloudflare_api_key="<Cloudflare API key>"
 export TF_VAR_docker_hub_token="<Docker Hub token>"
 export TF_VAR_azure_acr_password="<ACR password>"
+export TF_VAR_fluxcd_ansible_github_pat="<read-only GitHub PAT for the Ansible repository>"
 export TF_VAR_ansible_vault_password="<Ansible Vault password>"
 ```
 

@@ -25,7 +25,8 @@ pipeline IDs and paths.
 ## FluxCD provisioning
 
 A successful **Terraform Create** run from `develop` triggers **FluxCD Ansible**.
-It checks out the Ansible playbook, connects to the dev AKS cluster through
+It checks out the Ansible playbook through `FluxCD_Ansible_GitHub`, connects
+to the dev AKS cluster through
 `Azure_Connection`, and runs the playbook with the encrypted Vault and the
 `ANSIBLE_VAULT_PASSWORD` secret from the **FluxCD_Ansible_Vault** variable group.
 For a retry, run **FluxCD Ansible** directly.
