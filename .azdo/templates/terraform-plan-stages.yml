@@ -67,6 +67,10 @@ parameters:
     type: object
     default: {}
 
+  - name: preparePlanSteps
+    type: stepList
+    default: []
+
 stages:
   - stage: ${{ parameters.stageName }}
     displayName: ${{ parameters.stageName }}
@@ -107,6 +111,8 @@ stages:
               TF_STATE_BLOB_CONTAINER_NAME: ${{ parameters.storageContainer }}
               TF_STATE_BLOB_FILE: ${{ parameters.stateFile }}
               TF_STATE_BLOB_SAS_TOKEN: ${{ parameters.sasToken }}
+
+          - ${{ parameters.preparePlanSteps }}
 
           - ${{ if eq(parameters.destroy, false) }}:
             - bash: |

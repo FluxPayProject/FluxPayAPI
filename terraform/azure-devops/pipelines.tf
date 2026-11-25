@@ -47,9 +47,10 @@ locals {
       yaml_path = ".azdo/infrastructure/terraform-destroy.yml"
     }
     cloudflare_dns = {
-      name      = "Cloudflare DNS"
-      folder    = "\\Infrastructure"
-      yaml_path = ".azdo/cloudflare/terraform-dns.yml"
+      name           = "Cloudflare DNS"
+      folder         = "\\Infrastructure"
+      yaml_path      = ".azdo/cloudflare/terraform-dns.yml"
+      default_branch = "refs/heads/develop"
     }
   }
 

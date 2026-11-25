@@ -31,6 +31,10 @@ to the dev AKS cluster through
 `ANSIBLE_VAULT_PASSWORD` secret from the **FluxCD_Ansible_Vault** variable group.
 For a retry, run **FluxCD Ansible** directly.
 
+**FluxCD Ansible** waits for Traefik's LoadBalancer to receive an IPv4 address.
+Its successful completion on `develop` triggers **Cloudflare DNS**, which uses
+the address published by that run to update the application A record.
+
 ## FluxPay delivery
 
 Each service has a Build and PR Validation entry point using the same three

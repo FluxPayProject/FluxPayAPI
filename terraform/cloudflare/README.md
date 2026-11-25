@@ -1,9 +1,9 @@
 # Cloudflare DNS Terraform
 
 The dev root `environments/dev` manages the `A` record
-`fluxpay.razumovsky.me`. The existing zone ID and temporary
-`traefik_public_ip` default are in `variables.tf`; the zone is not managed here.
-Set a real public ingress IP before applying DNS changes.
+`fluxpay.razumovsky.me` in the existing Cloudflare zone. `traefik_public_ip`
+defaults to the address in `variables.tf`. Set it to the current IPv4 of the
+Traefik LoadBalancer when running Terraform locally.
 
 ## Run locally
 
@@ -15,6 +15,7 @@ From the repository root:
 ```bash
 cd terraform/cloudflare/environments/dev
 export CLOUDFLARE_API_TOKEN="<Cloudflare token>"
+export TF_VAR_traefik_public_ip="<Traefik public IPv4>"
 ```
 
 Create the ignored `backend.hcl` locally:
@@ -50,6 +51,9 @@ terraform import cloudflare_dns_record.application '<zone-id>/<dns-record-id>'
 
 ## Pipeline
 
-`.azdo/cloudflare/terraform-dns.yml` reuses the Terraform templates: PRs run
-plan, pushes to `main` can run apply. The token comes from `Cloudflare_API_Key`.
-The pipeline uses the Terraform IP default; it does not query AKS for an address.
+Successful **FluxCD Ansible** runs from `develop` trigger **Cloudflare DNS**.
+Terraform plans and applies the A record using the Traefik IPv4 published by
+that Ansible run. The Cloudflare token comes from `Cloudflare_API_Key`.
+
+PRs to `main` run a plan, and qualifying runs from `main` can apply. These runs
+use the default address from `variables.tf`.

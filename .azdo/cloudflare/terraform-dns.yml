@@ -18,6 +18,15 @@ pr:
       - .azdo/cloudflare/**
       - .azdo/templates/terraform-*.yml
 
+resources:
+  pipelines:
+    - pipeline: fluxBootstrap
+      source: '\Infrastructure\FluxCD Ansible'
+      trigger:
+        branches:
+          include:
+            - refs/heads/develop
+
 variables:
   - group: Cloudflare_API_Key
   - group: Terraform_Backend_StateFile_Settings
@@ -45,6 +54,16 @@ stages:
       stateFile: $(cloudflareStateFile)
       sasToken: $(library-sas-token)
       destroy: false
+      preparePlanSteps:
+        - download: fluxBootstrap
+          artifact: traefik-ingress
+          condition: and(succeeded(), eq(variables['Resources.TriggeringAlias'], 'fluxBootstrap'))
+        - bash: cp "$INGRESS_ARTIFACT" traefik.auto.tfvars.json
+          displayName: Use Traefik IP from FluxCD Ansible
+          condition: and(succeeded(), eq(variables['Resources.TriggeringAlias'], 'fluxBootstrap'))
+          workingDirectory: $(workingDirectory)
+          env:
+            INGRESS_ARTIFACT: $(Pipeline.Workspace)/fluxBootstrap/traefik-ingress/traefik.auto.tfvars.json
       terraformEnvironment:
         CLOUDFLARE_API_TOKEN: $(cloudflare-api-key)
 
@@ -61,6 +80,9 @@ stages:
       environment: dev
       dependsOn: [ '${{ variables.planStageName }}' ]
       condition: ${{ variables.planStageName }}
-      additionalCondition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
+      additionalCondition: >-
+        or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+        and(eq(variables['Build.SourceBranch'], 'refs/heads/develop'),
+        eq(variables['Resources.TriggeringAlias'], 'fluxBootstrap')))
       terraformEnvironment:
         CLOUDFLARE_API_TOKEN: $(cloudflare-api-key)
