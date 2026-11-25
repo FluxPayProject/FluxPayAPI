@@ -1,0 +1,72 @@
+trigger: none
+pr: none
+
+resources:
+  pipelines:
+    - pipeline: infrastructure
+      source: '\Infrastructure\Terraform Create'
+      trigger:
+        branches:
+          include:
+            - refs/heads/develop
+  repositories:
+    - repository: fluxBootstrap
+      type: github
+      name: FluxPayProject/fluxcd-operator-install-ansible
+      endpoint: FluxPay
+      ref: refs/heads/main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  aksResourceGroup: rg-aks-d01
+  aksClusterName: my-aks-cluster-d01
+
+steps:
+  - checkout: fluxBootstrap
+    path: s/flux-bootstrap
+
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.13'
+
+  - bash: |
+      set -euo pipefail
+      python -m pip install -r requirements.txt
+      ansible-galaxy collection install -r requirements.galaxy.yml -p .ansible/collections
+    displayName: Install Ansible dependencies
+    workingDirectory: $(Pipeline.Workspace)/s/flux-bootstrap
+
+  - task: AzureCLI@2
+    displayName: Provision FluxCD on AKS
+    inputs:
+      azureSubscription: Azure_Connection
+      scriptType: bash
+      scriptLocation: inlineScript
+      workingDirectory: $(Pipeline.Workspace)/s/flux-bootstrap
+      inlineScript: |
+        set -euo pipefail
+        : "${ANSIBLE_VAULT_PASSWORD:?Set the secret pipeline variable ANSIBLE_VAULT_PASSWORD}"
+        umask 077
+        temp_dir=$(mktemp -d)
+        trap 'for file in "$temp_dir/kubeconfig" "$temp_dir/vault-password"; do
+          if [ -f "$file" ]; then unlink "$file"; fi
+        done; rmdir "$temp_dir"' EXIT
+
+        export KUBECONFIG="$temp_dir/kubeconfig"
+        export KUBE_CONTEXT="$AKS_CLUSTER_NAME"
+        printf '%s\n' "$ANSIBLE_VAULT_PASSWORD" > "$temp_dir/vault-password"
+        unset ANSIBLE_VAULT_PASSWORD
+
+        az aks get-credentials --only-show-errors \
+          --resource-group "$AKS_RESOURCE_GROUP" --name "$AKS_CLUSTER_NAME" \
+          --file "$KUBECONFIG" --context "$KUBE_CONTEXT"
+
+        ansible-playbook install-fluxcd-operator.yml \
+          --vault-password-file "$temp_dir/vault-password" \
+          --extra-vars @vault/aks.yml --extra-vars @vault/aks-vars.yml
+    env:
+      AKS_RESOURCE_GROUP: $(aksResourceGroup)
+      AKS_CLUSTER_NAME: $(aksClusterName)
+      ANSIBLE_VAULT_PASSWORD: $(ANSIBLE_VAULT_PASSWORD)

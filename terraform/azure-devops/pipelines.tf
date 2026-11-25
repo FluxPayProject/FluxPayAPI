@@ -35,6 +35,12 @@ locals {
       folder    = "\\Infrastructure"
       yaml_path = ".azdo/infrastructure/terraform-create.yml"
     }
+    fluxcd_ansible = {
+      name           = "FluxCD Ansible"
+      folder         = "\\Infrastructure"
+      yaml_path      = ".azdo/infrastructure/fluxcd-ansible.yml"
+      default_branch = "refs/heads/develop"
+    }
     terraform_destroy = {
       name      = "Terraform Destroy"
       folder    = "\\Infrastructure"
@@ -120,7 +126,7 @@ resource "azuredevops_build_definition" "pipeline" {
   repository {
     repo_type             = "GitHub"
     repo_id               = var.github_repository_id
-    branch_name           = var.pipeline_default_branch
+    branch_name           = lookup(each.value, "default_branch", var.pipeline_default_branch)
     yml_path              = each.value.yaml_path
     service_connection_id = azuredevops_serviceendpoint_github.github.id
     report_build_status   = true
@@ -144,6 +150,13 @@ resource "azuredevops_pipeline_authorization" "github_repository" {
   resource_id = azuredevops_serviceendpoint_github.github.id
   type        = "endpoint"
   pipeline_id = each.value.id
+}
+
+resource "azuredevops_pipeline_authorization" "fluxcd_azure" {
+  project_id  = var.project_id
+  resource_id = azuredevops_serviceendpoint_azurerm.azure.id
+  type        = "endpoint"
+  pipeline_id = azuredevops_build_definition.pipeline["fluxcd_ansible"].id
 }
 
 resource "azuredevops_pipeline_authorization" "docker_hub" {

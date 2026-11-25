@@ -1,6 +1,6 @@
 # Managed pipelines
 
-`pipelines.tf` creates nine pipelines using the `FluxPay` GitHub connection,
+`pipelines.tf` creates ten pipelines using the `FluxPay` GitHub connection,
 repository `FluxPayProject/FluxPayAPI` and hosted `Azure Pipelines` pool.
 
 - PR Validation Auth: `.azdo/pr-validation/pr-validation-auth.yml`
@@ -10,6 +10,7 @@ repository `FluxPayProject/FluxPayAPI` and hosted `Azure Pipelines` pool.
 - Build Consumer: `.azdo/build/build-consumer.yml`
 - Build Sender: `.azdo/build/build-sender.yml`
 - Terraform Create: `.azdo/infrastructure/terraform-create.yml`
+- FluxCD Ansible: `.azdo/infrastructure/fluxcd-ansible.yml`
 - Terraform Destroy: `.azdo/infrastructure/terraform-destroy.yml`
 - Cloudflare DNS: `.azdo/cloudflare/terraform-dns.yml`
 
@@ -20,6 +21,14 @@ override it with `TF_VAR_pipeline_default_branch` when needed.
 Terraform also creates the `dev` environment and grants access to the three
 infrastructure pipelines. `terraform output pipeline_definitions` shows actual
 pipeline IDs and paths.
+
+## FluxCD provisioning
+
+A successful **Terraform Create** run from `develop` triggers **FluxCD Ansible**.
+It checks out the Ansible playbook, connects to the dev AKS cluster through
+`Azure_Connection`, and runs the playbook with the encrypted Vault and the
+`ANSIBLE_VAULT_PASSWORD` secret variable. For a retry, run **FluxCD Ansible**
+directly.
 
 ## FluxPay delivery
 
