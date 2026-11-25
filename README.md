@@ -55,6 +55,8 @@ Setup: [Azure infrastructure](terraform/infrastructure/README.md),
 
 ## Kubernetes deployment
 
+[One-click deployment guide](terraform/one-click-deployment.md)
+
 Ansible bootstraps Flux Operator on AKS. Flux reads `clusters/aks` from the
 `master` branch of the [GitOps repository](https://github.com/FluxPayProject/fluxcd-repository).
 

@@ -22,18 +22,10 @@ Terraform also creates the `dev` environment and grants access to the three
 infrastructure pipelines. `terraform output pipeline_definitions` shows actual
 pipeline IDs and paths.
 
-## FluxCD provisioning
+## One-click deployment
 
-A successful **Terraform Create** run from `develop` triggers **FluxCD Ansible**.
-It checks out the Ansible playbook through `FluxCD_Ansible_GitHub`, connects
-to the dev AKS cluster through
-`Azure_Connection`, and runs the playbook with the encrypted Vault and the
-`ANSIBLE_VAULT_PASSWORD` secret from the **FluxCD_Ansible_Vault** variable group.
-For a retry, run **FluxCD Ansible** directly.
-
-**FluxCD Ansible** waits for Traefik's LoadBalancer to receive an IPv4 address.
-Its successful completion on `develop` triggers **Cloudflare DNS**, which uses
-the address published by that run to update the application A record.
+See [One-click deployment](../one-click-deployment.md) for the Azure, FluxCD,
+and Cloudflare pipeline sequence, prerequisites, and retry steps.
 
 ## FluxPay delivery
 
@@ -72,5 +64,4 @@ GitOps commit if a push races with another run.
    release needs to be rolled back, revert its GitOps commit to restore the
    previous chart and image pins together.
 
-Legacy `Configure Platform` is not managed here. Keep it disabled; there is no
-maintained all-in-one deployment entry point yet.
+Keep the legacy `Configure Platform` pipeline disabled.
