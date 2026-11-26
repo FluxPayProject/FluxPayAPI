@@ -1,45 +1,40 @@
-provider "sonarcloud" {
-  organization = "fluxpayproject"
+resource "sonarqube_cloud_quality_gate" "fluxpay_api" {
+  organization = var.organization
+  name         = var.quality_gate_name
+
+  condition {
+    metric    = "new_reliability_rating"
+    operator  = "GT"
+    threshold = "1"
+  }
+
+  condition {
+    metric    = "new_security_rating"
+    operator  = "GT"
+    threshold = "1"
+  }
+
+  condition {
+    metric    = "new_maintainability_rating"
+    operator  = "GT"
+    threshold = "1"
+  }
+
+  condition {
+    metric    = "new_duplicated_lines_density"
+    operator  = "GT"
+    threshold = "3"
+  }
+
+  condition {
+    metric    = "new_security_hotspots_reviewed"
+    operator  = "LT"
+    threshold = "100"
+  }
 }
 
-resource "sonarcloud_quality_gate" "fluxpay_api" {
-  name = "FluxPayAPI"
-
-  conditions = [
-    {
-      metric = "new_reliability_rating"
-      op     = "GT"
-      error  = "1"
-    },
-    {
-      metric = "new_security_rating"
-      op     = "GT"
-      error  = "1"
-    },
-    {
-      metric = "new_maintainability_rating"
-      op     = "GT"
-      error  = "1"
-    },
-    {
-      metric = "new_duplicated_lines_density"
-      op     = "GT"
-      error  = "3"
-    },
-    {
-      metric = "new_security_hotspots_reviewed"
-      op     = "LT"
-      error  = "100"
-    },
-  ]
-}
-
-import {
-  to = sonarcloud_quality_gate.fluxpay_api
-  id = "FluxPayAPI"
-}
-
-resource "sonarcloud_quality_gate_selection" "fluxpay_api" {
-  gate_id      = sonarcloud_quality_gate.fluxpay_api.id
-  project_keys = ["FluxPayProject_FluxPayAPI"]
+resource "sonarqube_cloud_project_quality_gate" "fluxpay_api" {
+  organization    = sonarqube_project.fluxpay_api.organization
+  project_key     = sonarqube_project.fluxpay_api.key
+  quality_gate_id = sonarqube_cloud_quality_gate.fluxpay_api.id
 }

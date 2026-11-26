@@ -2,9 +2,9 @@ terraform {
   required_version = ">= 1.16.0"
 
   required_providers {
-    sonarcloud = {
-      source  = "rewe-digital/sonarcloud"
-      version = "0.5.2"
+    sonarqube = {
+      source  = "sonarsource/sonarqube"
+      version = "= 0.1.0-alpha.6"
     }
   }
 

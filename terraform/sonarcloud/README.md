@@ -1,44 +1,69 @@
-# SonarCloud quality gate
+# SonarQube Cloud project and quality gate
 
-This Terraform root manages the existing `FluxPayAPI` quality gate and its
-assignment to `FluxPayProject_FluxPayAPI` in `fluxpayproject`. The gate uses
-the five conditions already configured in SonarCloud.
+This Terraform root manages three resources in the existing SonarQube Cloud
+organization: the project, the custom quality gate and its assignment to the
+project. The defaults match the Build Auth pipeline in Azure DevOps.
 
-- Reliability, security and maintainability ratings of A on new code.
-- At most 3% duplicated lines in new code.
-- All new security hotspots reviewed.
+- Organization: `fluxpayproject`
+- Project key: `FluxPayProject_FluxPayAPI`
+- Project and quality gate name: `FluxPayAPI`
+- Main branch: `develop`
 
-## Run locally
+The gate requires A ratings for reliability, security and maintainability on
+new code, at most 3% duplicated lines, and review of all new security hotspots.
 
-Requires Terraform 1.16+, access to the Azure Blob state container and a
-SonarCloud user token with **Administer Quality Gates** permission in
-`fluxpayproject`. The organization needs a plan that supports custom quality
-gates. See [SonarCloud's custom gate requirements](https://docs.sonarsource.com/sonarqube-cloud/standards/managing-quality-gates/managing-custom-quality-gates).
+## Initialize
+
+Use Terraform 1.16+, Bash, curl and jq. The SonarQube Cloud organization needs
+the Team or Enterprise plan for a custom gate assignment. Use a SonarQube Cloud
+**user token** with **Create Projects**, **Administer Quality Gates** and
+administrative access to the project it manages.
 
 From the repository root:
 
 ```bash
 cd terraform/sonarcloud
-export ARM_SAS_TOKEN="<state container SAS token>"
-export SONARCLOUD_TOKEN="<SonarCloud administrator's user token>"
-
-terraform init
-terraform fmt -check
+export ARM_SAS_TOKEN="<Azure state container SAS token>"
+export SONARQUBE_TOKEN="<SonarQube Cloud user token>"
+./init.sh
 terraform validate
-terraform plan -out=sonarcloud.tfplan
 ```
 
-With empty state, the first plan imports `FluxPayAPI` by name and records the
-project assignment. The provider applies the existing assignment when it first
-records it in state.
+`init.sh` installs the pinned
+[SonarSource provider](https://github.com/SonarSource/terraform-provider-sonarqube/releases/tag/v0.1.0-alpha.6)
+from its GitHub release. Terraform checks the package against
+`.terraform.lock.hcl`.
 
-Apply the reviewed plan and check that the next plan reports no changes:
+FluxPayAPI is tracked in the configured Azure state. Use `terraform plan` and
+`terraform apply` for routine changes.
+
+## Create a project from scratch
+
+Run this against an empty state with a project key and gate name that are
+available in the organization. For an additional project alongside FluxPayAPI,
+initialize a separate backend key, for example
+`./init.sh -reconfigure -backend-config=key=sonarcloud-new-project.tfstate`.
+Set `organization`, `project_key`, `project_name`, `quality_gate_name` and
+`main_branch` as needed. Build Auth analyzes the `develop` branch.
 
 ```bash
+terraform plan -out=sonarcloud.tfplan
 terraform apply sonarcloud.tfplan
-terraform plan
 ```
 
-Confirm that the project uses `FluxPayAPI` under **Project Settings > Quality
-Gate** in SonarCloud. The next Build Auth analysis on `develop` will report the
-result for that gate.
+The initial apply creates the project, creates the custom gate, reconciles its
+conditions and assigns it to the project. For Azure DevOps analysis, configure
+the scanner service connection in the
+[Azure DevOps Terraform root](../azure-devops/README.md#sonarcloud).
+The scanner organization and project key must match this configuration.
+This root provisions a project for CI analysis. Repository binding for Azure
+DevOps is outside the SonarSource provider's supported bindings.
+
+## Change the gate
+
+Edit a `condition` in [quality-gate.tf](quality-gate.tf), then run
+`terraform plan -out=sonarcloud.tfplan`. A threshold edit should show one
+in-place update of the gate. Apply the reviewed plan and run the analysis to
+see the result with the new threshold. Terraform manages the complete set of
+conditions, so conditions added in the SonarQube Cloud UI appear as removals
+in the next plan.

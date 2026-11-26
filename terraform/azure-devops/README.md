@@ -92,15 +92,15 @@ References: [Microsoft: GitHub authentication](https://learn.microsoft.com/en-us
 
 ## SonarCloud
 
-Manage the project's [SonarCloud quality gate](../sonarcloud/README.md) with its
-dedicated Terraform root.
+Manage the SonarQube Cloud project and its
+[quality gate](../sonarcloud/README.md) in the dedicated Terraform root.
 
 For Build Auth, set `TF_VAR_manage_sonarcloud=true`
 and `TF_VAR_sonarcloud_token`, then plan/apply. Keep management enabled once the
 connection is managed: `prevent_destroy` protects it from accidental removal.
 An unmanaged same-name connection must be explicitly adopted or removed first.
 
-Build Auth runs SonarCloud analysis on `main`. Build Consumer,
+Build Auth runs SonarCloud analysis on `develop`. Build Consumer,
 Build Sender, and PR Validation have SonarCloud analysis disabled.
 
 ## Reference
