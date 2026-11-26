@@ -96,7 +96,7 @@ stages:
                 - download: current
                   artifact: drop
 
-                - task: TerraformInstaller@1
+                - task: TerraformInstaller@1.2.3
                   displayName: 'Install Terraform ${{ parameters.terraformVersion }}'
                   inputs:
                     terraformVersion: '${{ parameters.terraformVersion }}'

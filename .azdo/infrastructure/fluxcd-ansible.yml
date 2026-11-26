@@ -39,7 +39,7 @@ steps:
 
   - bash: |
       set -euo pipefail
-      python -m pip install -r requirements.txt
+      python -m pip install --require-hashes --only-binary :all: -r requirements.lock
       ansible-galaxy collection install -r requirements.galaxy.yml -p .ansible/collections
     displayName: Install Ansible dependencies
     workingDirectory: $(Pipeline.Workspace)/s/flux-bootstrap
