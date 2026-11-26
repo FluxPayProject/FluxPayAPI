@@ -1,13 +1,14 @@
 # SonarQube Cloud project and quality gate
 
-This Terraform root manages three resources in the existing SonarQube Cloud
-organization: the project, the custom quality gate and its assignment to the
-project. The defaults match the Build Auth pipeline in Azure DevOps.
+This Terraform root manages the project, its GitHub repository binding, the
+custom quality gate and its assignment in the existing SonarQube Cloud
+organization. The defaults match the Build Auth pipeline in Azure DevOps.
 
 - Organization: `fluxpayproject`
 - Project key: `FluxPayProject_FluxPayAPI`
 - Project and quality gate name: `FluxPayAPI`
 - Main branch: `develop`
+- GitHub repository: `FluxPayProject/FluxPayAPI`
 
 The gate requires A ratings for reliability, security and maintainability on
 new code, at most 3% duplicated lines, and review of all new security hotspots.
@@ -43,21 +44,22 @@ Run this against an empty state with a project key and gate name that are
 available in the organization. For an additional project alongside FluxPayAPI,
 initialize a separate backend key, for example
 `./init.sh -reconfigure -backend-config=key=sonarcloud-new-project.tfstate`.
-Set `organization`, `project_key`, `project_name`, `quality_gate_name` and
-`main_branch` as needed. Build Auth analyzes the `develop` branch.
+Set `organization`, `project_key`, `project_name`, `quality_gate_name`,
+`main_branch` and `github_repository` as needed. The SonarQube Cloud
+organization's GitHub App needs access to the repository. Use a repository
+that is available to bind when creating an additional SonarQube Cloud project.
+Build Auth analyzes the `develop` branch.
 
 ```bash
 terraform plan -out=sonarcloud.tfplan
 terraform apply sonarcloud.tfplan
 ```
 
-The initial apply creates the project, creates the custom gate, reconciles its
-conditions and assigns it to the project. For Azure DevOps analysis, configure
+The initial apply creates the project, binds it to GitHub, configures the
+custom gate and assigns it to the project. For Azure DevOps analysis, configure
 the scanner service connection in the
 [Azure DevOps Terraform root](../azure-devops/README.md#sonarcloud).
 The scanner organization and project key must match this configuration.
-This root provisions a project for CI analysis. Repository binding for Azure
-DevOps is outside the SonarSource provider's supported bindings.
 
 ## Change the gate
 

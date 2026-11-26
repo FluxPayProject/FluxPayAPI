@@ -27,3 +27,9 @@ variable "main_branch" {
   type        = string
   default     = "develop"
 }
+
+variable "github_repository" {
+  description = "GitHub repository to bind in owner/name format."
+  type        = string
+  default     = "FluxPayProject/FluxPayAPI"
+}
