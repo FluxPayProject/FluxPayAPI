@@ -27,6 +27,7 @@ terraform/cloudflare/environments/*/backend.hcl
 terraform/azure-devops/backend.hcl
 terraform/azure-devops/*.tfvars
 terraform/azure-devops/*.tfvars.json
+!terraform/sonarcloud/.terraform.lock.hcl
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
