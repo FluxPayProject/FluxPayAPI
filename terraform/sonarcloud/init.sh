@@ -13,7 +13,7 @@ mkdir -p "$packages"
 if [[ ! -f "$packages/$archive" ]]; then
   download="$(mktemp "$packages/download.XXXXXXXX")"
   trap 'rm -f -- "$download"' EXIT
-  curl --fail --silent --show-error --location --retry 3 \
+  curl --proto '=https' --proto-redir '=https' --fail --silent --show-error --location --retry 3 \
     "https://github.com/SonarSource/terraform-provider-sonarqube/releases/download/v${version}/${archive}" \
     --output "$download"
   mv -- "$download" "$packages/$archive"
