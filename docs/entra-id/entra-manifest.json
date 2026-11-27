@@ -1,0 +1,162 @@
+{
+  "id": "70609e14-9f90-462e-8c2f-7e3322cd00e6",
+  "deletedDateTime": null,
+  "appId": "25128d03-9817-4e11-bddf-dc5f6df4042a",
+  "applicationTemplateId": null,
+  "disabledByMicrosoftStatus": null,
+  "createdByAppId": null,
+  "displayName": "FluxPayEntraID",
+  "description": null,
+  "groupMembershipClaims": "None",
+  "identifierUris": [
+    "api://25128d03-9817-4e11-bddf-dc5f6df4042a"
+  ],
+  "isDeviceOnlyAuthSupported": null,
+  "isDisabled": null,
+  "isFallbackPublicClient": null,
+  "nativeAuthenticationApisEnabled": null,
+  "notes": null,
+  "publisherDomain": "kolosovp94gmail.onmicrosoft.com",
+  "serviceManagementReference": null,
+  "signInAudience": "AzureADMultipleOrgs",
+  "tags": [],
+  "tokenEncryptionKeyId": null,
+  "samlMetadataUrl": null,
+  "defaultRedirectUri": null,
+  "certification": null,
+  "servicePrincipalLockConfiguration": null,
+  "requestSignatureVerification": null,
+  "addIns": [],
+  "api": {
+    "acceptMappedClaims": null,
+    "knownClientApplications": [],
+    "requestedAccessTokenVersion": null,
+    "oauth2PermissionScopes": [
+      {
+        "adminConsentDescription": "Flux Pay Auth Scope",
+        "adminConsentDisplayName": "FluxPayAuthScope",
+        "id": "c271cef1-003d-47d6-a1e7-a0a2e5c8dc62",
+        "isEnabled": true,
+        "type": "User",
+        "userConsentDescription": "Access local environment",
+        "userConsentDisplayName": "Access local environment",
+        "value": "FluxPayAuth.All"
+      }
+    ],
+    "preAuthorizedApplications": []
+  },
+  "appRoles": [
+    {
+      "allowedMemberTypes": [
+        "User"
+      ],
+      "description": "Users role",
+      "displayName": "User",
+      "id": "a1618718-f0ca-4bb6-bc7e-ce124280fc00",
+      "isEnabled": true,
+      "origin": "Application",
+      "value": "User"
+    },
+    {
+      "allowedMemberTypes": [
+        "User"
+      ],
+      "description": "Admin role",
+      "displayName": "Admin",
+      "id": "6d6c1c90-00c2-40cb-a8d3-b0ddc9393d0a",
+      "isEnabled": true,
+      "origin": "Application",
+      "value": "Admin"
+    }
+  ],
+  "info": {
+    "logoUrl": null,
+    "marketingUrl": null,
+    "privacyStatementUrl": null,
+    "supportUrl": null,
+    "termsOfServiceUrl": null
+  },
+  "keyCredentials": [],
+  "optionalClaims": {
+    "accessToken": [],
+    "idToken": [
+      {
+        "additionalProperties": [],
+        "essential": false,
+        "name": "sid",
+        "source": null
+      }
+    ],
+    "saml2Token": [],
+    "kerberosTicket": []
+  },
+  "parentalControlSettings": {
+    "countriesBlockedForMinors": [],
+    "legalAgeGroupRule": "Allow"
+  },
+  "passwordCredentials": [
+    {
+      "displayName": "Flux Pay Entra Secret",
+      "keyId": "4cbe0707-283d-4ade-ad48-508c0a70d97a"
+    }
+  ],
+  "publicClient": {
+    "redirectUris": []
+  },
+  "requiredResourceAccess": [
+    {
+      "resourceAppId": "00000003-0000-0000-c000-000000000000",
+      "resourceAccess": [
+        {
+          "id": "e1fe6dd8-ba31-4d61-89e7-88639da4683d",
+          "type": "Scope"
+        }
+      ]
+    }
+  ],
+  "verifiedPublisher": {
+    "displayName": null,
+    "verifiedPublisherId": null,
+    "addedDateTime": null
+  },
+  "web": {
+    "homePageUrl": null,
+    "logoutUrl": null,
+    "redirectUris": [
+      "https://fluxpay.razumovsky.me/authorization-redirect",
+      "https://localhost:7000/authorization-redirect",
+      "https://localhost:4200/authorization-redirect",
+      "http://localhost:4200/authorization-redirect",
+      "http://localhost:3000"
+    ],
+    "implicitGrantSettings": {
+      "enableAccessTokenIssuance": true,
+      "enableIdTokenIssuance": true
+    },
+    "redirectUriSettings": [
+      {
+        "uri": "https://fluxpay.razumovsky.me/authorization-redirect",
+        "index": null
+      },
+      {
+        "uri": "https://localhost:7000/authorization-redirect",
+        "index": null
+      },
+      {
+        "uri": "https://localhost:4200/authorization-redirect",
+        "index": null
+      },
+      {
+        "uri": "http://localhost:4200/authorization-redirect",
+        "index": null
+      },
+      {
+        "uri": "http://localhost:3000",
+        "index": null
+      }
+    ]
+  },
+  "spa": {
+    "redirectUris": []
+  }
+}

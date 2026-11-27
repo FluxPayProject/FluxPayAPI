@@ -25,6 +25,13 @@ FluxPayAPI offers realtime communication using SignalR.
 - **Docker:** https://docs.docker.com/get-docker/
 - **IDE**: Visual Studio or JetBrains Rider
 
+## Microsoft Entra ID
+
+[Set up the FluxPay Entra app registration](docs/entra-id/README.md) before running
+with a new tenant or changing the public authorization URL. The guide includes
+redirect URIs, Microsoft Graph permissions and consent, scopes, roles, and
+client secret wiring for local and AKS deployments.
+
 ## How to run in Debug mode
 
 ### Build Angular client
