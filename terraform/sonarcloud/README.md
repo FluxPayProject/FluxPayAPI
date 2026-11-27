@@ -24,16 +24,31 @@ From the repository root:
 
 ```bash
 cd terraform/sonarcloud
-export ARM_SAS_TOKEN="<Azure state container SAS token>"
 export SONARQUBE_TOKEN="<SonarQube Cloud user token>"
+```
+
+Create the ignored `backend.hcl` locally.
+
+```hcl
+storage_account_name = "tfstatestorage011"
+container_name       = "tfstatecontainer01"
+key                  = "sonarcloud-fluxpay.tfstate"
+sas_token            = "<Azure state container SAS token>"
+```
+
+```bash
 ./init.sh
 terraform validate
 ```
 
-`init.sh` installs the pinned
+`init.sh` passes the local `backend.hcl` to `terraform init -backend-config`
+and installs the pinned
 [SonarSource provider](https://github.com/SonarSource/terraform-provider-sonarqube/releases/tag/v0.1.0-alpha.6)
 from its GitHub release. Terraform checks the package against
-`.terraform.lock.hcl`.
+`.terraform.lock.hcl`. For an existing checkout
+previously initialized with backend settings in `versions.tf`, run
+`./init.sh -reconfigure` once. Keep the state key from the example to use the
+existing SonarQube Cloud state.
 
 FluxPayAPI is tracked in the configured Azure state. Use `terraform plan` and
 `terraform apply` for routine changes.

@@ -2,6 +2,12 @@
 set -euo pipefail
 
 root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+backend_config="$root/backend.hcl"
+if [[ ! -f "$backend_config" ]]; then
+  printf 'Create backend.hcl using the settings in terraform/sonarcloud/README.md.\n' >&2
+  exit 1
+fi
+
 version="$(sed -n 's/^[[:space:]]*version[[:space:]]*=[[:space:]]*"= \([^"]*\)"$/\1/p' "$root/versions.tf")"
 platform="$(terraform version -json | jq -er '.platform')"
 archive="terraform-provider-sonarqube_${version}_${platform}.zip"
@@ -20,4 +26,4 @@ if [[ ! -f "$packages/$archive" ]]; then
 fi
 
 # Terraform verifies the release archive against the committed dependency lock.
-terraform -chdir="$root" init -plugin-dir="$mirror" -lockfile=readonly "$@"
+terraform -chdir="$root" init -backend-config="$backend_config" -plugin-dir="$mirror" -lockfile=readonly "$@"

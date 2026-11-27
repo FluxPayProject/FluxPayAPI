@@ -8,9 +8,5 @@ terraform {
     }
   }
 
-  backend "azurerm" {
-    storage_account_name = "tfstatestorage011"
-    container_name       = "tfstatecontainer01"
-    key                  = "sonarcloud-fluxpay.tfstate"
-  }
+  backend "azurerm" {}
 }
